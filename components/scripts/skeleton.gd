@@ -166,6 +166,8 @@ func choose_atk():
 		choosed_atk = Possible_Attacks.BASIC_ATK
 	elif rng >= 55:
 		choosed_atk = Possible_Attacks.PARRY
+		
+	choosed_atk = Possible_Attacks.PARRY
 
 # -------- SIGNAL DIGEST -------- #
 
@@ -204,7 +206,10 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 	if is_in_atk_range and !grabbed and not parring:
 		var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 		var dmg = dmg_info[0]
-		current_vit -= dmg
+		if dmg <= 0 and soul_out:
+			current_vit = 0.0001
+		else:
+			current_vit -= dmg
 		if dmg > 0 and not dying:
 			scene_manager.emit_hit_particles(sender, self)
 			hit_flash_player.stop()
@@ -283,12 +288,6 @@ func set_health_bar():
 	
 	healthbar.value = current_vit
 
-'DIGEST DEL TIMER "GrabTime", IMPOSTA UN DELAY DOPO LA GRAB
-	setto le collisioni a true'
-
-func _on_timer_timeout():
-	body_collider.disabled = false
-
 # -------- SIGNAL DIGEST -------- #
 
 'DIGEST CHE PERMETTE DI FAR RIPARTIRE IL MOVIMENTO'
@@ -300,7 +299,7 @@ func set_idle():
 		soul_out = false
 		if parring:
 			parring = false
-			sprite.play("idle")
+		sprite.play("idle")
 		basic_atk_effect.play("idle")
 		body_collider.set_deferred("disabled", false)
 
@@ -329,7 +328,7 @@ func parry():
 	if is_instance_valid(player) and stun_timer.is_stopped() and not grabbed and player_in_atk_range and not parring:
 		parring = true
 		sprite.play("parry")
-		parry_time.start()
+		parry_time.start(5)
 	patty_cooldown.start()
 
 func _on_parry_time_timeout() -> void:

@@ -652,7 +652,6 @@ navigation_layers = 3
 path_postprocessing = 1
 simplify_path = true
 simplify_epsilon = 2.0
-avoidance_enabled = true
 radius = 20.0
 max_neighbors = 20
 max_speed = 1703.04

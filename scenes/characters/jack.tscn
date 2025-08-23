@@ -544,7 +544,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"as_change",
-"speed": 8.0
+"speed": 14.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -666,7 +666,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"p_change",
-"speed": 7.0
+"speed": 14.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -864,7 +864,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"sh_change",
-"speed": 8.0
+"speed": 14.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1338,7 +1338,6 @@ scale = Vector2(1.2, 1.2)
 sprite_frames = SubResource("SpriteFrames_dte57")
 animation = &"p_idle"
 autoplay = "p_idle"
-frame_progress = 0.788332
 metadata/_aseprite_wizard_interface_config_ = {
 "layer_section": false,
 "output_section": false,

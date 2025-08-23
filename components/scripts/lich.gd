@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-var boss_name = "Kreegakaleet lu Gosata'ahm"
+var boss_name = "Archalom L'esiliato"
 
 @export var default_vit : int = 1500
 #@export var default_vit : int = 15

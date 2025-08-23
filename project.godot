@@ -25,11 +25,16 @@ QuestManager="*res://overworld/scripts/quest/quest_manager.gd"
 QuestStatus="*res://overworld/scripts/quest/quest_status.gd"
 PowerupStats="*res://components/scripts/powerups/powerup_stats.gd"
 
+[debug]
+
+gdscript/warnings/integer_division=0
+gdscript/warnings/confusable_local_usage=0
+
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/mode=3
+window/size/mode=4
 window/energy_saving/keep_screen_on=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
@@ -219,6 +224,7 @@ rendering_device/staging_buffer/max_size_mb=256
 textures/canvas_textures/default_texture_filter=0
 textures/default_filters/anisotropic_filtering_level=1
 viewport/hdr_2d=true
+environment/glow/upscale_mode=0
 environment/defaults/default_clear_color=Color(0.309804, 0.309804, 0.309804, 1)
 2d/snap/snap_2d_transforms_to_pixel=true
 2d/snap/snap_2d_vertices_to_pixel=true

@@ -1,5 +1,6 @@
-[gd_scene load_steps=155 format=3 uid="uid://cdj6vi8f58cl0"]
+[gd_scene load_steps=157 format=3 uid="uid://cdj6vi8f58cl0"]
 
+[ext_resource type="Shader" uid="uid://cv657l5vgn5hb" path="res://rufus.gdshader" id="1_0ux1b"]
 [ext_resource type="Script" uid="uid://cqmhu2e8k4wws" path="res://components/scripts/rufus.gd" id="1_kqagk"]
 [ext_resource type="Texture2D" uid="uid://b2uag3j6vt8fm" path="res://components/sprites/rufus/Rufus_base_atk1.png" id="2_qcuyf"]
 [ext_resource type="PackedScene" uid="uid://b8m3imv5eplab" path="res://scenes/miscellaneous/knockback_controller.tscn" id="3_0ux1b"]
@@ -21,6 +22,10 @@
 [ext_resource type="Texture2D" uid="uid://cixwjw2tvf78u" path="res://components/sprites/GUI/status_alert/debuff_animation.png" id="15_12i5i"]
 [ext_resource type="Texture2D" uid="uid://da0dj4l15d4d5" path="res://components/sprites/GUI/status_alert/recover_animation.png" id="16_1jbt6"]
 [ext_resource type="Texture2D" uid="uid://civne652306iv" path="res://components/sprites/rufus/HD_sprites/Rufus_ult_eff_HD.png" id="16_kk0ut"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0xvgb"]
+shader = ExtResource("1_0ux1b")
+shader_parameter/look_right = true
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_3ojpq"]
 shader = ExtResource("4_3dgml")
@@ -1061,6 +1066,7 @@ _data = {
 [node name="CharacterBody2D" type="CharacterBody2D"]
 process_mode = 1
 y_sort_enabled = true
+material = SubResource("ShaderMaterial_0xvgb")
 collision_mask = 6
 collision_priority = 99999.0
 motion_mode = 1
@@ -1192,6 +1198,8 @@ one_shot = true
 
 [node name="Ulti_cooldown" type="Timer" parent="."]
 wait_time = 60.0
+one_shot = true
+autostart = true
 
 [node name="Combo_time" type="Timer" parent="."]
 wait_time = 0.4

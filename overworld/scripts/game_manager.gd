@@ -6,6 +6,10 @@ enum Attack_Types {PHYSICAL, PROJECTILE}
 
 @onready var root : Window = get_node("/root/")
 
+var idle_timeout = 3  # secondi
+var last_input_time = Time.get_ticks_msec()
+var is_cursor_hidden = false
+
 func _ready():
 	# Depends on starting scene
 	Menu.game_status = Menu.GAME_STATUSES.unopenable
@@ -13,28 +17,22 @@ func _ready():
 
 func _process(_delta):
 	if Input.is_action_just_pressed("pause") and Menu.game_status != Menu.GAME_STATUSES.unopenable:
-		#print(str(DisplayServer.screen_get_size()))
-		#var screen_size : Vector2i = DisplayServer.screen_get_size()
-		
 		Menu.pause_game()
 
 	if Input.is_action_just_pressed("fullscreen_toggle"):
 		fullscreen()
 	
-	#if Input.is_action_just_pressed("base_atk"):
-		#print(str(root.get_size_with_decorations()))
-		#root.set_size(Vector2i(1920, 1080))
-		#root.set_position(Vector2(0, 0))
-	#
-	#if Input.is_action_just_pressed("evade"):
-		#print(str(root.get_size_with_decorations()))
-		#root.set_size(DisplayServer.screen_get_size())
-		#root.set_position(Vector2(0, 0))
-	#
-	#if Input.is_action_just_pressed("skill1"):
-		#print(str(root.get_size_with_decorations()))
-		#root.set_size(Vector2i(800, 600))
-		#root.set_position(Vector2(0, 0))
+	if Input.get_last_mouse_velocity():
+		last_input_time = Time.get_ticks_msec()
+	
+	if Time.get_ticks_msec() - last_input_time > idle_timeout * 1000 and not is_cursor_hidden:
+		Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+		is_cursor_hidden = true
+	
+	elif Time.get_ticks_msec() - last_input_time < idle_timeout * 1000 and is_cursor_hidden:
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		is_cursor_hidden = false
+	
 
 func load_dungeon():
 	Menu.game_status = Menu.GAME_STATUSES.dungeon
@@ -57,7 +55,7 @@ func load_map():
 	get_child(0).queue_free()
 	
 func fullscreen():
-	if DisplayServer.window_get_mode(0) != DisplayServer.WINDOW_MODE_FULLSCREEN:
-			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	if DisplayServer.window_get_mode(0) != DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 	else:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MAXIMIZED)
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)

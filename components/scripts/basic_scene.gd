@@ -5,7 +5,7 @@ var selected_character
 var paused : bool = false
 var connected : bool = false
 # serve come indice per scorrere i tileset
-var boss_defeted_count : int = 2
+var boss_defeted_count : int = 0
 var active_tileset : Node2D
 var active_enemy_container : Node2D
 @onready var Attack_Types = get_tree().get_first_node_in_group("gm").Attack_Types
@@ -63,7 +63,7 @@ func _ready():
 	self.add_child(load(tilesets[boss_defeted_count]).instantiate(),true)
 	active_tileset = get_child(-1)
 	active_enemy_container = active_tileset.find_child("Enemy_container")
-	
+	active_enemy_container.scene_manager = self
 	active_enemy_container.round_changed.connect(round_gui._on_round_changed)
 	active_enemy_container.boss_defeted.connect(self._on_boss_defeted)
 	active_enemy_container.connect_boss_with_GUI.connect(round_gui._on_boss_spawned)
@@ -111,7 +111,7 @@ func _on_gui_select_character(char):
 	player = find_child("Player", true, false)
 	player.scale = Vector2(1.0, 1.0)
 	player.scene_manager = self
-	
+	 
 	add_child(load(camera_follower).instantiate(), true)
 	get_child(get_child_count()-1).player = player
 	player.camera = get_child(get_child_count()-1).camera

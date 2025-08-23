@@ -12,7 +12,7 @@ uniform float speed_scale = 0;
 
 void fragment() {
 	vec2 uv = UV + direction * speed_scale;
-	
+
 	float noise = texture(noise_texture, uv).r;
 	float fog = clamp(noise * 2.0 - 1.0, 0.0, 1.0);
 	COLOR.a *= fog * density;

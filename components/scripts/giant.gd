@@ -72,6 +72,7 @@ var choosed_atk
 
 @onready var update_atk_timer = $Update_Atk
 
+var SPRITE_POSITION
 var PUNCH_COLLIDER_POSITION_X
 var PUNCH_EFFECT_POSITION_X
 var BODY_COLLIDER_POSITION_X
@@ -89,6 +90,7 @@ func _ready():
 	set_health_bar()
 	sprite.play("idle")
 	update_atk_timer.wait_time = randf_range(3, 5.8)
+	SPRITE_POSITION = sprite.position
 	PUNCH_COLLIDER_POSITION_X = punch_collider.position.x
 	PUNCH_EFFECT_POSITION_X = punch_effect.position.x
 	BODY_COLLIDER_POSITION_X = body_collider.position.x
@@ -324,9 +326,9 @@ func punch():
 		punch_cooldown.start()
 		attacking = true
 		if sprite.flip_h:
-			sprite.position = Vector2(-58,0)
+			sprite.position.x += -58
 		else:
-			sprite.position = Vector2(58,0)
+			sprite.position.x += 58
 		moving = false
 		sprite.play("punch")
 		punch_effect.play("effect")
@@ -358,7 +360,7 @@ func earthquake():
 # DIGEST CHE PERMETTE DI FAR RIPARTIRE IL MOVIMENTO
 func set_idle():
 	if not knockbacked and not grabbed:
-		sprite.position = Vector2.ZERO
+		sprite.position = SPRITE_POSITION
 		moving = true
 		attacking = false
 		punch_collider.set_deferred("disabled", true)

@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://basjc3jfb3huq"]
+
+[ext_resource type="Texture2D" uid="uid://dg050ppelycpg" path="res://components/sprites/GUI/status_alert/trail.png" id="1_di57s"]
+
+[node name="Line2D" type="Line2D"]
+texture_repeat = 2
+points = PackedVector2Array(421, 125, 38, 26)
+width = 50.0
+texture = ExtResource("1_di57s")
+texture_mode = 1

@@ -621,7 +621,7 @@ material = SubResource("ShaderMaterial_b8fga")
 position = Vector2(7.15256e-07, 3)
 scale = Vector2(0.128125, 0.128125)
 sprite_frames = SubResource("SpriteFrames_7kgit")
-animation = &"idle"
+animation = &"parry"
 autoplay = "idle"
 
 [node name="Status_alert_sprite" type="AnimatedSprite2D" parent="."]

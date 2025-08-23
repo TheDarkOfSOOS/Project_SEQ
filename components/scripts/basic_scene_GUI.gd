@@ -13,6 +13,8 @@ signal powerup_spawnable()
 var max_health
 
 var boss
+# ogni quante ondate spawna un powerup
+var powerup_round : int = 5
 
 func _ready():
 	round_displayer.text = "Ondata: " + str(round_count)
@@ -23,7 +25,7 @@ func _on_round_changed():
 		QuestManager.quests["try"].reach_goal_quest()
 		QuestManager.quests["try"].complete_quest()
 	# FREQUENZA DI SPAWN DEI POWERUPS
-	if round_count % 1 == 0:
+	if round_count % powerup_round == 0:
 		emit_signal("powerup_spawnable")
 	round_displayer.text = "Ondata: " + str(round_count)
 
@@ -37,6 +39,9 @@ func _on_boss_set_healthbar(vit):
 		boss.set_idle_timer.stop()
 		boss.stun_timer.stop()
 		animation_player.play("delete_boss_bar")
+		Engine.time_scale = 0.1
+		await get_tree().create_timer(0.4, true, false, false).timeout
+		Engine.time_scale = 1.0
 		if QuestManager.quests["the_bigger_they_are"].status == QuestStatus.of_type.started:
 			QuestManager.quests["the_bigger_they_are"].reach_goal_quest()
 	if vit > max_health:

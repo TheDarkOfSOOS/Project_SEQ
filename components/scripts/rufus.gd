@@ -543,6 +543,8 @@ func _on_enemy_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, se
 		hit_flash_player.stop()
 		hit_flash_player.play("hit_flash")
 		emit_signal("shake_camera", true, dmg_info[2])
+		if dmg >= default_vit*30/100:
+			dramatic_slow_motion()
 	if stun_sec > 0:
 		emit_signal("set_idle")
 		sprite.play("damaged")
@@ -647,3 +649,8 @@ func _on_change_stats(stat, amount, time_duration, _ally_sender):
 
 func _on_status_alert_sprite_animation_finished():
 	status_sprite.play("idle")
+
+func dramatic_slow_motion():
+	Engine.time_scale = 0.3
+	await get_tree().create_timer(0.5, true, false, true).timeout
+	Engine.time_scale = 1.0

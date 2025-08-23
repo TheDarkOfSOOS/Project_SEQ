@@ -15,6 +15,8 @@ func _process(delta):
 func _on_player_shake_camera(is_shaking, strenght):
 	shaking = is_shaking
 	if strenght != 0:
+		if strenght > 50:
+			strenght = 50
 		shake_strenght = strenght
 	if not is_shaking:
 		offset = Vector2(0,0)

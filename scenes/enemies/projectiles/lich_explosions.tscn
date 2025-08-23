@@ -88,6 +88,7 @@ disabled = true
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 process_mode = 1
+self_modulate = Color(1.5, 1.5, 1.5, 1)
 scale = Vector2(0.45, 0.45)
 sprite_frames = SubResource("SpriteFrames_35mb6")
 animation = &"effect"

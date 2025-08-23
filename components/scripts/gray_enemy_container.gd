@@ -3,8 +3,14 @@ extends Node2D
 var markers = [] # array che contiene tutti i marker della scena
 var active_markers = [] # array che si popola allo spawnare dei nemici
 # array contenente i percorsi dei nemici
-var possible_enemies = [preload("res://scenes/enemies/zombie.tscn"),preload("res://scenes/enemies/skeleton.tscn"),preload("res://scenes/enemies/giant.tscn"),preload("res://scenes/enemies/werewolf.tscn"),preload("res://scenes/enemies/fae.tscn"),preload("res://scenes/enemies/centaur.tscn")]
-#var possible_enemies = ["res://scenes/enemies/zombie.tscn","res://scenes/enemies/skeleton.tscn","res://scenes/enemies/giant.tscn","res://scenes/enemies/werewolf.tscn","res://scenes/enemies/fae.tscn","res://scenes/enemies/centaur.tscn"]
+var possible_enemies = [
+	preload("res://scenes/enemies/zombie.tscn"),
+	preload("res://scenes/enemies/skeleton.tscn"),
+	preload("res://scenes/enemies/giant.tscn"),
+	preload("res://scenes/enemies/werewolf.tscn"),
+	preload("res://scenes/enemies/fae.tscn"),
+	preload("res://scenes/enemies/centaur.tscn")
+	]
 # [0] = Zombie
 # [1] = Scheletro
 # [2] = Gigante
@@ -13,7 +19,16 @@ var possible_enemies = [preload("res://scenes/enemies/zombie.tscn"),preload("res
 # [5] = Centauro
 
 # array che contiene il percorso del boss
-var boss_scene = preload("res://scenes/enemies/lich.tscn")
+var boss_scene : Resource = preload("res://scenes/enemies/lich.tscn")
+
+@export var line_scene : Resource = preload("res://scenes/miscellaneous/trail_to_pickable.tscn")
+var instantiated_line : Line2D
+var line : Line2D
+
+var scene_manager : Node2D
+
+# ogni quante ondata spawna un boss
+var boss_round : int = 10
 
 signal round_changed() # segnale che manda alla GUI per incrementare il counter
 signal heal_between_rounds(amount) # segnale che manda al player per curarlo
@@ -21,19 +36,18 @@ signal boss_defeted() # segnale che manda allo scene_manager per evocare il port
 signal connect_boss_with_GUI(boss) # segnale che collega il boss alla barra della vita
 signal instantiate_pickup()
 
-var fighting # flag che determina quando esistono nemici
-var boss_is_defeted = false # flag che determina quando il boss è stato sconfitto
-var boss_spawned = false # flag che determina se il boss è spawnato
-var portal_spawned = false # flag che determina se il portale è spawnato
+var fighting : bool # flag che determina quando esistono nemici
+var boss_is_defeted : bool = false # flag che determina quando il boss è stato sconfitto
+var boss_spawned : bool = false # flag che determina se il boss è spawnato
+var portal_spawned : bool = false # flag che determina se il portale è spawnato
 
-var powerup_spawned = true
-var powerup_spawnable = false
-var powerup_picked = true
+var powerup_spawned : bool = true
+var powerup_spawnable : bool = false
+var powerup_picked : bool = true
+var dramatic_flag : bool = false
 
 @onready var time_between_rounds = $Round_cooldown
-@onready var boss_spawner = $Boss_spawner
-
-@warning_ignore("unused_signal")
+@onready var boss_spawner : Marker2D = $Boss_spawner
 
 func _ready():
 	# popolo l'array con tutti gli spawnpoint
@@ -60,13 +74,21 @@ func _process(_delta):
 	if powerup_spawned and not powerup_present:
 		powerup_picked = true
 	
+	if is_instance_valid(line):
+		var new_array : Array[Vector2] = [scene_manager.player.global_position, boss_spawner.global_position]
+		line.points = PackedVector2Array(new_array)
+	
 	if not boss_is_defeted or powerup_spawnable:
 		if not fighting and not powerup_spawned and powerup_spawnable:
+			dramatic_slow_motion()
 			emit_signal("instantiate_pickup")
 			powerup_spawned = true
 			powerup_picked = false
 			powerup_spawnable = false
 		elif not fighting and time_between_rounds.is_stopped() and powerup_picked:
+			if is_instance_valid(line):
+				line.queue_free()
+			dramatic_slow_motion()
 			time_between_rounds.start()
 	else:
 		if not portal_spawned and powerup_picked:
@@ -80,6 +102,7 @@ func _on_round_cooldown_timeout():
 	emit_signal("round_changed") # invio il segnale al round_gui per incremetare l'ondata
 	emit_signal("heal_between_rounds", heal_amount) # invio il segnale al player per curarsi di una certa quantità
 	fighting = true # di conseguenza i nemici spawneranno quindi combatto
+	dramatic_flag = true
 	if is_boss_round() and not boss_is_defeted: # se è il round del boss e il boss non è stato sconfitto
 		spawn_boss() # spawno il boss
 		boss_spawned = true # ricordo che l'ho spawnato
@@ -159,7 +182,7 @@ func is_boss_round():
 	# prendo il numero di ondata dalla round_gui
 	var round_count = get_parent().get_parent().round_gui.round_count 
 	# se il round_count è > 0 ed è divisibile per n (ogni quanti round far spawnare il boss)
-	if round_count > 0 and round_count % 10 == 0: 
+	if round_count > 0 and round_count % boss_round == 0: 
 		return true # ritorno vero
 	else: # altrimenti
 		return false # ritorno falso
@@ -172,3 +195,18 @@ func _on_powerup_spawnable() -> void:
 func _on_powerup_handler_spawn_pickable(node : Variant) -> void:
 	node.reparent(self)
 	node.global_position = boss_spawner.global_position
+	instantiate_line()
+
+func dramatic_slow_motion() -> void:
+	if dramatic_flag:
+		Engine.time_scale = 0.3
+		await get_tree().create_timer(0.5).timeout
+		Engine.time_scale = 1.0
+		dramatic_flag = false
+
+func instantiate_line():
+	var new_array : Array[Vector2] = [scene_manager.player.global_position, boss_spawner.global_position]
+	instantiated_line = line_scene.instantiate()
+	instantiated_line.points = PackedVector2Array(new_array)
+	self.add_child(instantiated_line, true)
+	line = self.find_child("Line2D", true, false)
