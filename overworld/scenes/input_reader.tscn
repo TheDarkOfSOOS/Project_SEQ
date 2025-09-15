@@ -1,0 +1,59 @@
+[gd_scene load_steps=3 format=3 uid="uid://ky7mu7sk0o3a"]
+
+[ext_resource type="Script" uid="uid://drbec01m6l04b" path="res://overworld/scripts/settings/input_reader.gd" id="1_8xlat"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8xlat"]
+bg_color = Color(0.114897, 0.114897, 0.114897, 1)
+
+[node name="InputReader" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8xlat")
+
+[node name="BackToMenuDelay" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 0.25
+one_shot = true
+
+[node name="Shadow" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.588235)
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -84.0
+offset_bottom = 84.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_8xlat")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "Premere un tasto..."
+horizontal_alignment = 1
+
+[connection signal="timeout" from="BackToMenuDelay" to="." method="_on_back_to_menu_delay_timeout"]

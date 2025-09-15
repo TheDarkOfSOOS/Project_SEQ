@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3 uid="uid://du2hxx017h2e"]
+
+[ext_resource type="Script" uid="uid://d4fq5lcbohtv0" path="res://overworld/scripts/settings/action_bind.gd" id="1_kyu7v"]
+
+[node name="KeyContainer" type="HBoxContainer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 16.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+script = ExtResource("1_kyu7v")
+
+[node name="ModifyKeybindButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Modifica"
+
+[node name="TextLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "questo testo"
+
+[node name="GamepadActionLabel" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "A"
+
+[node name="KeyboardActionLabel" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "A"
+
+[connection signal="pressed" from="ModifyKeybindButton" to="." method="_on_modify_keybind_button_pressed"]
