@@ -3,7 +3,21 @@
 [ext_resource type="Texture2D" uid="uid://cs5jopxmileup" path="res://components/sprites/mainlevbuild.png" id="1_uhrny"]
 [ext_resource type="Texture2D" uid="uid://1myxeqojf4he" path="res://components/sprites/decorative.png" id="2_42pd3"]
 [ext_resource type="Script" uid="uid://b6ky75s4yqxlb" path="res://components/scripts/gray_enemy_container.gd" id="3_0q7ik"]
-[ext_resource type="Texture2D" uid="uid://cbck0w068ejki" path="res://components/sprites/light_test2.png" id="4_euj4w"]
+
+[sub_resource type="Environment" id="Environment_euj4w"]
+background_mode = 3
+background_color = Color(0.233925, 0.233925, 0.233925, 1)
+glow_enabled = true
+glow_intensity = 1.0
+glow_strength = 0.95
+glow_blend_mode = 0
+glow_hdr_threshold = 0.78
+fog_light_energy = 7.14
+fog_sun_scatter = 3.6
+fog_density = 0.6065
+adjustment_enabled = true
+adjustment_brightness = 0.74
+adjustment_saturation = 0.74
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_05ucm"]
 vertices = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
@@ -1822,6 +1836,9 @@ sources/2 = SubResource("TileSetAtlasSource_gwla5")
 process_mode = 1
 y_sort_enabled = true
 
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_euj4w")
+
 [node name="Ground" type="TileMapLayer" parent="."]
 z_index = -1
 use_parent_material = true
@@ -1899,15 +1916,5 @@ position = Vector2(-20, 461)
 position = Vector2(-452, 509)
 
 [node name="Boss_spawner" type="Marker2D" parent="Enemy_container"]
-
-[node name="PointLight2D" type="PointLight2D" parent="."]
-position = Vector2(-420, 79)
-scale = Vector2(11.4532, 11.4532)
-color = Color(0.898619, 0.465387, 0.197325, 1)
-energy = 2.7
-shadow_enabled = true
-texture = ExtResource("4_euj4w")
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
 
 [connection signal="timeout" from="Enemy_container/Round_cooldown" to="Enemy_container" method="_on_round_cooldown_timeout"]

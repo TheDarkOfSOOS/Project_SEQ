@@ -311,10 +311,11 @@ func _on_skill_2_area_body_entered(body):
 		
 		var temp = [skill2_knockback_amount, skill2_knockback_force]
 		temp = powerup_handler.apply_powerup_boost("Alvin", temp)
+		#print(temp)
 		if temp == null:
 			temp = [0, 0]
 		
-		emit_signal("inflict_knockback", skill2_knockback_amount+temp[0], skill2_knockback_force, self.global_position)
+		emit_signal("inflict_knockback", skill2_knockback_amount+temp[0], skill2_knockback_force+temp[1], self.global_position)
 		#emit_signal("inflict_knockback", 10, 10, self.global_position)
 
 func _on_skill_2_area_body_exited(body):
@@ -328,10 +329,11 @@ func _on_ult_area_body_entered(body):
 		
 		var temp = [ult_knockback_amount, ult_knockback_force]
 		temp = powerup_handler.apply_powerup_boost("Alvin", temp)
+		#print(temp)
 		if temp == null:
 			temp = [0, 0]
 		
-		emit_signal("inflict_knockback", ult_knockback_amount+temp[0], ult_knockback_force, self.global_position)
+		emit_signal("inflict_knockback", ult_knockback_amount+temp[0], ult_knockback_force+temp[1], self.global_position)
 
 func _on_ult_area_body_exited(body):
 	if body != self:
@@ -470,7 +472,7 @@ func _on_set_idle():
 		
 		self.set_collision_layer_value(1, true)
 		
-		self.set_collision_mask_value(2, true)
+		#self.set_collision_mask_value(2, true)
 		self.set_collision_mask_value(3, true)
 		
 		can_move = true

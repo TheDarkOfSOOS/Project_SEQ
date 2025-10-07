@@ -31,7 +31,8 @@ var player_gui
 var camera_follower : String = "res://scenes/miscellaneous/camera_follower.tscn"
 
 # array che contiene i tileset
-var tilesets : Array = ["res://scenes/tilemaps/gray_tile_map.tscn",
+var tilesets : Array = [
+						"res://scenes/tilemaps/gray_tile_map.tscn",
 						#"res://scenes/tilemaps/lightblue_tile_map.tscn",
 						"res://scenes/tilemaps/forest_tile_map.tscn",
 						"res://scenes/tilemaps/deep_forest_tile_map.tscn"

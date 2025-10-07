@@ -451,7 +451,7 @@ func _on_set_idle():
 		
 		self.set_collision_layer_value(1, true)
 		
-		self.set_collision_mask_value(2, true)
+		#self.set_collision_mask_value(2, true)
 		self.set_collision_mask_value(3, true)
 		
 		flashbang_collider.set_deferred("disabled", true)

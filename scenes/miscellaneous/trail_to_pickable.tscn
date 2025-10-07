@@ -3,6 +3,8 @@
 [ext_resource type="Texture2D" uid="uid://dg050ppelycpg" path="res://components/sprites/GUI/status_alert/trail.png" id="1_di57s"]
 
 [node name="Line2D" type="Line2D"]
+modulate = Color(1.5, 1.5, 1.5, 1)
+light_mask = 0
 texture_repeat = 2
 points = PackedVector2Array(421, 125, 38, 26)
 width = 50.0

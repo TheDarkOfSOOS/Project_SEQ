@@ -1,4 +1,4 @@
-[gd_scene load_steps=157 format=3 uid="uid://cdj6vi8f58cl0"]
+[gd_scene load_steps=159 format=3 uid="uid://cdj6vi8f58cl0"]
 
 [ext_resource type="Shader" uid="uid://cv657l5vgn5hb" path="res://rufus.gdshader" id="1_0ux1b"]
 [ext_resource type="Script" uid="uid://cqmhu2e8k4wws" path="res://components/scripts/rufus.gd" id="1_kqagk"]
@@ -22,6 +22,7 @@
 [ext_resource type="Texture2D" uid="uid://cixwjw2tvf78u" path="res://components/sprites/GUI/status_alert/debuff_animation.png" id="15_12i5i"]
 [ext_resource type="Texture2D" uid="uid://da0dj4l15d4d5" path="res://components/sprites/GUI/status_alert/recover_animation.png" id="16_1jbt6"]
 [ext_resource type="Texture2D" uid="uid://civne652306iv" path="res://components/sprites/rufus/HD_sprites/Rufus_ult_eff_HD.png" id="16_kk0ut"]
+[ext_resource type="Texture2D" uid="uid://cbck0w068ejki" path="res://components/sprites/light_test2.png" id="23_0xvgb"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0xvgb"]
 shader = ExtResource("1_0ux1b")
@@ -1063,11 +1064,14 @@ _data = {
 &"hit_flash": SubResource("Animation_mo7si")
 }
 
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_0ux1b"]
+polygon = PackedVector2Array(0, -32, -9, -29, -13, -24, -15, -13, -16, 5, -15, 28, -12, 43, -6, 49, 3, 51, 10, 48, 15, 34, 15, 18, 16, 1, 16, -19, 11, -27, 6, -31)
+
 [node name="CharacterBody2D" type="CharacterBody2D"]
 process_mode = 1
 y_sort_enabled = true
 material = SubResource("ShaderMaterial_0xvgb")
-collision_mask = 6
+collision_mask = 4
 collision_priority = 99999.0
 motion_mode = 1
 script = ExtResource("1_kqagk")
@@ -1212,6 +1216,16 @@ one_shot = true
 libraries = {
 &"": SubResource("AnimationLibrary_50jq1")
 }
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_0ux1b")
+
+[node name="Light" type="PointLight2D" parent="."]
+visible = false
+shadow_enabled = true
+texture = ExtResource("23_0xvgb")
+texture_scale = 6.1
+height = 0.35
 
 [connection signal="get_healed" from="." to="." method="_on_get_healed"]
 [connection signal="set_idle" from="." to="." method="_on_set_idle"]

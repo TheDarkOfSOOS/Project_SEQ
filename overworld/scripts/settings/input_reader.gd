@@ -48,7 +48,7 @@ func _on_back_to_menu_delay_timeout():
 	previous_focus.grab_focus()
 
 func same_event(ev1, ev2):
-	print(ev1, ev2)
+	#print(ev1, ev2)
 	var is_ev1_gp := KbGpDetector.is_event_gamepad(ev1)
 	var res := false
 	if ((ev2 is InputEventJoypadButton) or (ev2 is InputEventJoypadMotion)) \

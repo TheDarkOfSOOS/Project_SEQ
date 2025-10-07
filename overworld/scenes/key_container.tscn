@@ -26,13 +26,16 @@ text = "questo testo"
 [node name="GamepadActionLabel" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 theme_override_font_sizes/font_size = 32
 text = "A"
 
 [node name="KeyboardActionLabel" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 theme_override_font_sizes/font_size = 32
+button_mask = 0
 text = "A"
 
 [connection signal="pressed" from="ModifyKeybindButton" to="." method="_on_modify_keybind_button_pressed"]

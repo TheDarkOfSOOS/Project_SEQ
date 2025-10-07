@@ -436,7 +436,7 @@ bg_color = Color(0.219608, 0.219608, 0.219608, 1)
 bg_color = Color(1, 0, 0.0352941, 1)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kr4ka"]
-size = Vector2(63.5, 120)
+size = Vector2(62.75, 129)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pal7e"]
 atlas = ExtResource("11_hpvul")
@@ -532,7 +532,7 @@ _data = {
 process_mode = 1
 material = SubResource("ShaderMaterial_l2j2q")
 collision_layer = 2
-collision_mask = 5
+collision_mask = 4
 motion_mode = 1
 wall_min_slide_angle = 0.0
 safe_margin = 1.0
@@ -567,6 +567,7 @@ shape = SubResource("CapsuleShape2D_7foa3")
 debug_color = Color(1, 1, 0, 0.0666667)
 
 [node name="Control" type="Control" parent="."]
+light_mask = 0
 z_index = 10
 layout_mode = 3
 anchors_preset = 0
@@ -575,6 +576,7 @@ offset_bottom = 40.0
 metadata/_edit_use_anchors_ = true
 
 [node name="HealthBar" type="ProgressBar" parent="Control"]
+light_mask = 0
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.025
@@ -601,7 +603,7 @@ collision_layer = 2
 collision_mask = 5
 
 [node name="Collider" type="CollisionShape2D" parent="Bite_Area"]
-position = Vector2(40.25, 16)
+position = Vector2(31.375, 16.5)
 shape = SubResource("RectangleShape2D_kr4ka")
 debug_color = Color(1, 0.00392157, 0.0666667, 0.109804)
 
@@ -647,14 +649,12 @@ one_shot = true
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
 target_desired_distance = 80.0
-path_max_distance = 10.0
 navigation_layers = 3
 path_postprocessing = 1
-simplify_path = true
-simplify_epsilon = 2.0
-radius = 20.0
+simplify_epsilon = 1.213
+avoidance_enabled = true
 max_neighbors = 20
-max_speed = 1703.04
+debug_enabled = true
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
 libraries = {

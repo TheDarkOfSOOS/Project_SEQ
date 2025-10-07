@@ -1,4 +1,4 @@
-[gd_scene load_steps=88 format=4 uid="uid://coq1efv8c5tk7"]
+[gd_scene load_steps=89 format=4 uid="uid://coq1efv8c5tk7"]
 
 [ext_resource type="Texture2D" uid="uid://75cr12oopvxu" path="res://components/sprites/tilemaps/gentle sheets/gentle forest v02.png" id="1_iwx8r"]
 [ext_resource type="Texture2D" uid="uid://q2imrs4vnjdw" path="res://components/sprites/tilemaps/gentle sheets/gentle 32x32 v02.png" id="2_u4ikp"]
@@ -14,6 +14,18 @@
 [ext_resource type="Script" uid="uid://b6ky75s4yqxlb" path="res://components/scripts/gray_enemy_container.gd" id="12_uj64l"]
 [ext_resource type="Shader" uid="uid://camrr6hu5udic" path="res://components/shaders/test.gdshader" id="13_wmrt4"]
 [ext_resource type="Script" uid="uid://bm2h8iqn32du6" path="res://components/scripts/shader_pause_detector.gd" id="14_rp21u"]
+
+[sub_resource type="Environment" id="Environment_rp21u"]
+background_mode = 3
+background_color = Color(1, 1, 1, 1)
+glow_enabled = true
+glow_normalized = true
+glow_intensity = 1.5
+glow_strength = 1.09
+glow_bloom = 0.06
+glow_blend_mode = 0
+adjustment_enabled = true
+adjustment_saturation = 1.34
 
 [sub_resource type="TileMapPattern" id="TileMapPattern_kj4iq"]
 tile_data = PackedInt32Array(262144, 524292, 21, 327680, 524292, 22, 131073, 589828, 19, 196609, 589828, 20, 262145, 589828, 21, 327681, 589828, 22, 65538, 655364, 18, 131074, 655364, 19, 196610, 655364, 20, 262146, 655364, 21, 327682, 655364, 22, 65539, 720900, 18, 131075, 720900, 19, 196611, 720900, 20, 262147, 720900, 21, 327683, 720900, 22, 65540, 786436, 18, 131076, 786436, 19, 196612, 786436, 20, 262148, 786436, 21, 327684, 786436, 22, 65541, 851972, 18, 131077, 851972, 19, 196613, 851972, 20, 262149, 851972, 21, 327685, 851972, 22, 6, 917508, 17, 65542, 917508, 18, 131078, 917508, 19, 196614, 917508, 20, 262150, 917508, 21, 327686, 917508, 22, 7, 983044, 17, 65543, 983044, 18, 131079, 983044, 19, 196615, 983044, 20, 262151, 983044, 21, 327687, 983044, 22)
@@ -5020,6 +5032,9 @@ turbulence_noise_scale = 5.175
 [node name="BaseTileMap" type="Node2D"]
 process_mode = 1
 y_sort_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_rp21u")
 
 [node name="Ground" type="TileMapLayer" parent="."]
 z_index = -1

@@ -13,7 +13,6 @@ func build_input_list():
 	# Put all events
 	for input in InputMap.get_actions():
 		if not input.begins_with("ui_"):
-			print(input)
 			# Look only for our personalized
 			var key_row = keybind_row_scene.instantiate()
 			add_child(key_row)

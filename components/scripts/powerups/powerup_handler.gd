@@ -72,6 +72,8 @@ func activate_powerup(powerup : Resource, delete : bool = false) -> void:
 		else:
 			powerup.boost *= -1
 		player.default_vit += powerup.boost
+		if not player.current_vit + powerup.boost <= 0:
+			player.emit_signal("set_health_bar", player.current_vit)
 		player.current_vit += powerup.boost
 		player.emit_signal("set_health_bar", player.current_vit)
 		
@@ -81,10 +83,16 @@ func activate_powerup(powerup : Resource, delete : bool = false) -> void:
 		powerup.boost = increase_stat_by_percentage(player.default_vit, rarity_power(powerup))
 
 func increase_stat_by_percentage(base : int, perc : int) -> int:
-	return perc * base / 100
+	var a : int = perc * base / 100
+	#print("increase_stat_by_percentage base: "+str(base))
+	#print("increase_stat_by_percentage perc: "+str(perc))
+	#print("increase_stat_by_percentage return: "+str(a))
+	return a
 
 func rarity_power(resource : Resource) -> float:
-	return resource.base + (resource.step * resource.max_rarity)
+	var a : float = resource.base + (resource.step * resource.max_rarity)
+	#print("rarity_power return: "+ str(a))
+	return a
 
 func apply_powerup_boost(powerup_name : String, param : Array = [null]) -> Variant:
 	for i in active_powerups:
@@ -93,11 +101,10 @@ func apply_powerup_boost(powerup_name : String, param : Array = [null]) -> Varia
 				player._on_get_healed(i.boost)
 				return null
 			if i.p_name == "Alvin":
-				param.all(
-					func(element): 
-					element = increase_stat_by_percentage(element, rarity_power(i))
-					return i.boost
-					)
+				for j in param.size():
+					var tmp = param.pop_front()
+					tmp = increase_stat_by_percentage(tmp, rarity_power(i))
+					param.push_back(tmp)
 				return param
 			
 	return null

@@ -93,7 +93,7 @@ func _ready():
 	BODY_COLLIDER_POSITION_X = body_collider.position.x
 	BODY_COLLIDER_ROTATION = body_collider.rotation_degrees
 	BITE_EFFECT_X = bite_effect.position.x
-	BITE_COLLIDER_POSITION_X = bite_effect.position.x
+	BITE_COLLIDER_POSITION_X = bite_collider.position.x
 	sprite.play("idle")
 
 'METODO CHE VIENE PROCESSATO PER FRAME
@@ -164,8 +164,7 @@ func chase_player():
 			
 			sprite.play("running")
 			move_and_slide()
-		var player_position = (player.position - position).normalized()
-		flip(player_position)
+		flip((target_position - self.position).normalized())
 
 func sprint_to_player():
 	if player != null:
@@ -185,6 +184,7 @@ func choose_atk():
 	else:
 		choosed_atk = Possible_Attacks.SPRINT
 
+	choosed_atk = Possible_Attacks.IDLE
 
 # -------- SIGNAL DIGEST -------- #
 

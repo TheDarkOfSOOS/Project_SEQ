@@ -606,7 +606,7 @@ _data = {
 process_mode = 1
 y_sort_enabled = true
 collision_layer = 2
-collision_mask = 5
+collision_mask = 4
 motion_mode = 1
 wall_min_slide_angle = 0.0
 script = ExtResource("1_ug4iq")
@@ -621,7 +621,7 @@ material = SubResource("ShaderMaterial_b8fga")
 position = Vector2(7.15256e-07, 3)
 scale = Vector2(0.128125, 0.128125)
 sprite_frames = SubResource("SpriteFrames_7kgit")
-animation = &"parry"
+animation = &"idle"
 autoplay = "idle"
 
 [node name="Status_alert_sprite" type="AnimatedSprite2D" parent="."]
@@ -644,6 +644,7 @@ wait_time = 3.0
 one_shot = true
 
 [node name="HealthBar" type="ProgressBar" parent="."]
+light_mask = 0
 z_index = 10
 y_sort_enabled = true
 offset_left = -49.0
