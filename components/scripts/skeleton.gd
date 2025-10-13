@@ -17,7 +17,6 @@ var current_efc = default_efc
 
 var scene_manager : Node2D
 
-var var_velocity = 2
 var is_in_atk_range = false
 var moving = true
 var grabbed = false

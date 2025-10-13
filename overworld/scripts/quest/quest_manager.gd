@@ -9,7 +9,7 @@ func _ready():
 	if dir:
 		dir.list_dir_begin()
 		var file_name = dir.get_next()
-		var count = 0
+		#var count = 0
 		while file_name != "":
 			if not dir.current_is_dir() and file_name.ends_with(".tres"):
 				quests[file_name.replace(".tres", "")] = load("res://overworld/resources/" + file_name)

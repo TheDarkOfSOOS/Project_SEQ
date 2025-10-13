@@ -1,4 +1,4 @@
-[gd_scene load_steps=78 format=3 uid="uid://d2wge2miret0o"]
+[gd_scene load_steps=79 format=3 uid="uid://d2wge2miret0o"]
 
 [ext_resource type="Script" uid="uid://br8ws5a8se0ge" path="res://components/scripts/zombie.gd" id="1_4dl1i"]
 [ext_resource type="Shader" uid="uid://c3ywoxg7w2n4d" path="res://components/shaders/hit_shader.gdshader" id="1_p876d"]
@@ -528,6 +528,9 @@ _data = {
 &"hit_flash": SubResource("Animation_mo7si")
 }
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_i1x1v"]
+radius = 183.011
+
 [node name="ZombieEnemy" type="CharacterBody2D"]
 process_mode = 1
 material = SubResource("ShaderMaterial_l2j2q")
@@ -566,27 +569,17 @@ rotation = 0.191986
 shape = SubResource("CapsuleShape2D_7foa3")
 debug_color = Color(1, 1, 0, 0.0666667)
 
-[node name="Control" type="Control" parent="."]
+[node name="HealthBar" type="ProgressBar" parent="."]
 light_mask = 0
-z_index = 10
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-metadata/_edit_use_anchors_ = true
-
-[node name="HealthBar" type="ProgressBar" parent="Control"]
-light_mask = 0
-layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.025
 anchor_top = 0.325
 anchor_right = 0.025
 anchor_bottom = 0.325
-offset_left = -50.0
-offset_top = -60.0
-offset_right = 48.0
-offset_bottom = -50.0
+offset_left = -49.0
+offset_top = -47.0
+offset_right = 49.0
+offset_bottom = -37.0
 theme_override_styles/background = SubResource("StyleBoxFlat_00dig")
 theme_override_styles/fill = SubResource("StyleBoxFlat_0rxx2")
 max_value = 150.0
@@ -603,6 +596,7 @@ collision_layer = 2
 collision_mask = 5
 
 [node name="Collider" type="CollisionShape2D" parent="Bite_Area"]
+visible = false
 position = Vector2(31.375, 16.5)
 shape = SubResource("RectangleShape2D_kr4ka")
 debug_color = Color(1, 0.00392157, 0.0666667, 0.109804)
@@ -652,14 +646,17 @@ target_desired_distance = 80.0
 navigation_layers = 3
 path_postprocessing = 1
 simplify_epsilon = 1.213
-avoidance_enabled = true
 max_neighbors = 20
-debug_enabled = true
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
 libraries = {
 &"": SubResource("AnimationLibrary_50jq1")
 }
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_i1x1v")
 
 [connection signal="animation_finished" from="Status_alert_sprite" to="." method="_on_status_alert_sprite_animation_finished"]
 [connection signal="timeout" from="Stun" to="." method="_on_stun_timeout"]

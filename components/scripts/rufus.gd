@@ -418,7 +418,10 @@ func _on_sprite_2d_frame_changed():
 
 func _on_effect_frame_changed():
 	if skill1_effect.frame % 2 == 0 and atk_state == Atk_States.SK1:
+		skill1_collider.disabled = false
+		await get_tree().create_timer(0.1).timeout
 		emit_signal("take_dmg", current_str, skill1_force, skill1_stun_time, current_pbc, current_efc, skill1_type, self)
+		skill1_collider.disabled = true
 	
 	elif skill2_effect.frame == 2 and atk_state == Atk_States.SK2:
 		skill2_collider.set_deferred("disabled", false)
@@ -432,7 +435,6 @@ func _on_effect_frame_changed():
 # METODO CHE FA MUOVERE LO SPRITE IN ALTO DURANTE L'ANIMAZIONE DELLA ULTI #
 func ult_moving():
 	self.set_collision_layer_value(1, false)
-	self.set_collision_mask_value(2, false)
 	sprite.z_index = 1
 	sprite.position.y += ult_moving_mod
 	if sprite.flip_h:
@@ -456,6 +458,9 @@ func _on_set_idle():
 		self.rotation_degrees = 0
 		sprite.z_index = 0
 		sprite.flip_v = false
+		
+		stun_timer.stop()
+		combo_time.stop()
 		
 		sprite.play("idle")
 		skill1_effect.play("idle")

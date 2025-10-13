@@ -68,7 +68,7 @@ var sprinting = false
 @onready var sprint_charge_time = $Charge_Time
 @onready var sprint_time = $Sprint_time
 
-@onready var healthbar = $Control/HealthBar
+@onready var healthbar = $HealthBar
 
 @onready var hitmarker_spawnpoint = $Hitmarker_spawn
 
@@ -184,7 +184,7 @@ func choose_atk():
 	else:
 		choosed_atk = Possible_Attacks.SPRINT
 
-	choosed_atk = Possible_Attacks.IDLE
+	#choosed_atk = Possible_Attacks.IDLE
 
 # -------- SIGNAL DIGEST -------- #
 
