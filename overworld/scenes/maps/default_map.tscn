@@ -236,7 +236,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 focus_neighbor_left = NodePath("../Select_nathan")
-focus_neighbor_right = NodePath("../Select_rufus")
+focus_neighbor_right = NodePath("../Select_tyrone")
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_fonts/font = ExtResource("5_tbkfv")
@@ -245,7 +245,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_j7tto")
 text = "JACK"
 metadata/_edit_use_anchors_ = true
 
-[node name="Select_rufus" type="Button" parent="CanvasLayer/GUI/Chara_selector_container/GridContainer"]
+[node name="Select_tyrone" type="Button" parent="CanvasLayer/GUI/Chara_selector_container/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -256,14 +256,14 @@ theme_override_constants/outline_size = 4
 theme_override_fonts/font = ExtResource("5_tbkfv")
 theme_override_font_sizes/font_size = 43
 theme_override_styles/normal = SubResource("StyleBoxFlat_j5j4x")
-text = "RUFUS"
+text = "TYRONE"
 metadata/_edit_use_anchors_ = true
 
 [node name="Select_nathan" type="Button" parent="CanvasLayer/GUI/Chara_selector_container/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-focus_neighbor_left = NodePath("../Select_rufus")
+focus_neighbor_left = NodePath("../Select_tyrone")
 focus_neighbor_right = NodePath("../Select_jack")
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
@@ -515,7 +515,7 @@ position = Vector2(712, 495)
 
 [connection signal="select_character" from="CanvasLayer/GUI" to="." method="_on_gui_select_character"]
 [connection signal="pressed" from="CanvasLayer/GUI/Chara_selector_container/GridContainer/Select_jack" to="CanvasLayer/GUI" method="_on_select_stancil_pressed"]
-[connection signal="pressed" from="CanvasLayer/GUI/Chara_selector_container/GridContainer/Select_rufus" to="CanvasLayer/GUI" method="_on_select_rufus_pressed"]
+[connection signal="pressed" from="CanvasLayer/GUI/Chara_selector_container/GridContainer/Select_tyrone" to="CanvasLayer/GUI" method="_on_select_rufus_pressed"]
 [connection signal="pressed" from="CanvasLayer/GUI/Chara_selector_container/GridContainer/Select_nathan" to="CanvasLayer/GUI" method="_on_select_nathan_pressed"]
 [connection signal="body_entered" from="UnlockMission" to="UnlockMission" method="_on_body_entered"]
 [connection signal="body_entered" from="StartMission" to="StartMission" method="_on_body_entered"]

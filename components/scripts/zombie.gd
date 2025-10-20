@@ -1,30 +1,8 @@
-extends CharacterBody2D
+class_name Zombie extends Enemy
 
-@export var default_vit : int = 50
-#@export var default_vit : int = 5000000
-var current_vit = default_vit
-@export var default_str : int = 125
-var current_str = default_str
-@export var default_tem : int = 121
-var current_tem = default_tem
-@export var default_des : int = 150
-var current_des = default_des
-@export var default_pbc : int = 30
-var current_pbc = default_pbc
-@export var default_efc : float = 1.5
-var current_efc = default_efc
-
-@export var knockback_controller_node : PackedScene
 var scene_manager : Node2D
 
-var is_in_atk_range = false
-var moving = true
-
-var grabbed = false
 var grab_position
-var knockbacked = false
-var knockback_target_point
-var knockback_force
 
 signal take_dmg(str, atk_str, sec_stun, pbc, efc, type, sender)
 signal got_grabbed(is_grabbed)
@@ -35,8 +13,7 @@ var BODY_COLLIDER_ROTATION
 var BITE_EFFECT_X
 var BITE_COLLIDER_POSITION_X
 
-var target_position
-var player
+var target_position : Vector2
 
 enum Possible_Attacks {IDLE, BITE, SPRINT}
 var choosed_atk
@@ -59,7 +36,6 @@ var sprinting = false
 
 @onready var bite_effect = $Bite_Area/Effect
 @onready var bite_collider = $Bite_Area/Collider
-@onready var stun_timer = $Stun
 
 @onready var body_collider = $Body_collider
 
@@ -70,11 +46,6 @@ var sprinting = false
 
 @onready var healthbar = $HealthBar
 
-@onready var hitmarker_spawnpoint = $Hitmarker_spawn
-
-@onready var status_sprite = $Status_alert_sprite
-@onready var hit_flash_player = $Hit_flash_player
-
 @onready var update_atk_timer = $Update_Atk
 
 @onready var bite_cooldown = $Bite_Cooldown
@@ -82,12 +53,15 @@ var sprinting = false
 
 var player_in_atk_range = false
 
-'METODO CHE PARTE QUANDO VIENE ISTANZIATO IL NODO
-	setta la vita attuale a quella massima
-	imposta il valore massimo della barra della salute al massimo
-	setta la barra della salute'
+#METODO CHE PARTE QUANDO VIENE ISTANZIATO IL NODO
+	#setta la vita attuale a quella massima
+	#imposta il valore massimo della barra della salute al massimo
+	#setta la barra della salute
 
 func _ready():
+	var stats : Stats = load("res://components/resources/stats/zombie_stats.tres")
+	load_stats(stats)
+	
 	healthbar.max_value = default_vit
 	set_health_bar()
 	BODY_COLLIDER_POSITION_X = body_collider.position.x
@@ -96,13 +70,13 @@ func _ready():
 	BITE_COLLIDER_POSITION_X = bite_collider.position.x
 	sprite.play("idle")
 
-'METODO CHE VIENE PROCESSATO PER FRAME
-	controlla se il player è entrato in area e si può muovere
-		allora si muove
-	altrimenti se il player NON è entrato in area e si può muovere
-		allora comincia a vagare
-	controlla se è grabbato
-		allora fa partire il metodo grab()'
+#METODO CHE VIENE PROCESSATO PER FRAME
+	#controlla se il player è entrato in area e si può muovere
+		#allora si muove
+	#altrimenti se il player NON è entrato in area e si può muovere
+		#allora comincia a vagare
+	#controlla se è grabbato
+		#allora fa partire il metodo grab()
 
 func _physics_process(delta):
 	if knockbacked:
@@ -122,11 +96,11 @@ func _physics_process(delta):
 	elif not is_instance_valid(player) and moving:
 		sprite.play("idle")
 
-'METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
-	salvo la posizione attuale del player
-	creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
-	se il nodo è distante dal player di almeno 12 unità
-		muovo il nodo verso il player con la velocità di 3'
+#METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
+	#salvo la posizione attuale del player
+	#creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
+	#se il nodo è distante dal player di almeno 12 unità
+		#muovo il nodo verso il player con la velocità di 3
 
 func flip(distance_to_player):
 	if distance_to_player.x < 0:
@@ -148,19 +122,13 @@ func flip(distance_to_player):
 func chase_player():
 	if player:
 		navigation_agent.target_position = player.global_position
+		target_position = navigation_agent.get_next_path_position()
 		
 		if navigation_agent.is_navigation_finished():
 			if sprite.animation == "running":
 				sprite.play("idle")
 		else:
-			target_position = navigation_agent.get_next_path_position()
-			
-			var new_velocity = global_position.direction_to(target_position) * current_des
-			
-			if navigation_agent.avoidance_enabled:
-				navigation_agent.set_velocity(new_velocity)
-			else:
-				_on_navigation_agent_2d_velocity_computed(new_velocity)
+			self.velocity = global_position.direction_to(target_position) * current_des
 			
 			sprite.play("running")
 			move_and_slide()
@@ -188,23 +156,6 @@ func choose_atk():
 
 # -------- SIGNAL DIGEST -------- #
 
-#DIGEST DEL SEGNALE DEL PLAYER "is_in_atk_range"
-#{
-	#PARAMETRI
-	#boolean is_in: identifica se il nodo è entrato oppure è uscito
-	#Node body: identifica il nodo che è entrato o uscito
-#}
-	#se il segnale che manda al nodo è di entrata nel\'area e il nodo è questo
-		#allora il nodo è dentro l\'area del player
-	#altrimenti
-		#non è in range
-
-func _on_player_is_in_atk_range(is_in, body):
-	if is_in and body == self and not is_in_atk_range:
-		is_in_atk_range = true
-	else:
-		is_in_atk_range = false
-	
 #DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
 #{
 	#PARAMETRI
@@ -224,10 +175,10 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 	if is_in_atk_range and !grabbed:
 		var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 		var dmg = dmg_info[0]
-		scene_manager.show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
+		show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
 		current_vit -= dmg
 		if dmg > 0:
-			scene_manager.emit_hit_particles(sender, self)
+			emit_hit_particles(sender)
 			hit_flash_player.stop()
 			hit_flash_player.play("hit_flash")
 			emit_signal("shake_camera", true, dmg_info[2])
@@ -288,15 +239,18 @@ func _on_stun_timeout():
 	sprint_collider.set_deferred("disabled", true)
 	set_idle()
 
-'DIGEST DEL SEGNALE PROPRIO "set_health_bar", AGGIORNA LA BARRA DELLA SALUTE
-	il valore della barra diventa uguale a quello della vita attuale
-	se il valore della vita è minore o uguale a 0
-		cancello il nodo dalla scena'
+#DIGEST DEL SEGNALE PROPRIO "set_health_bar", AGGIORNA LA BARRA DELLA SALUTE
+	#il valore della barra diventa uguale a quello della vita attuale
+	#se il valore della vita è minore o uguale a 0
+		#cancello il nodo dalla scena
 
 func set_health_bar():
 	if current_vit <= 0:
 		if player.char_name == "Nathan" and grabbed:
 			emit_signal("got_grabbed", false)
+		if player.char_name == "Tyrone" and player.sprite.animation == "base atk5":
+			QuestManager.quests["combo"].reach_goal_quest()
+			QuestManager.quests["combo"].complete_quest()
 		queue_free()
 	elif current_vit > default_vit:
 		current_vit = default_vit
@@ -305,7 +259,7 @@ func set_health_bar():
 
 # -------- SIGNAL DIGEST -------- #
 
-'DIGEST CHE PERMETTE DI FAR RIPARTIRE IL MOVIMENTO'
+#DIGEST CHE PERMETTE DI FAR RIPARTIRE IL MOVIMENTO
 
 func set_idle():
 	if not knockbacked and not grabbed:
@@ -370,65 +324,7 @@ func _on_update_atk_timeout():
 		choose_atk()
 	update_atk_timer.start()
 
-func _on_navigation_agent_2d_velocity_computed(safe_velocity):
-	velocity = safe_velocity
-
-func init_knockback(amount, force, sender):
-	if is_in_atk_range and not grabbed:
-		velocity = Vector2(0, 0)
-		moving = false
-		sprinting = false
-		knockbacked = true
-		
-		var temp = sender.direction_to(self.global_position) * amount
-		
-		knockback_target_point = self.global_position + temp
-		knockback_force = force
-		
-		self.add_child(knockback_controller_node.instantiate(), true)
-		var knockback_controller = get_child(-1)
-		knockback_controller.reparent(get_parent())
-		knockback_controller.target_point = knockback_target_point
-		knockback_controller.vel_multiplyer = force
-		knockback_controller.caller = self
-		knockback_controller.target_reached.connect(self._on_knockback_reset)
-
-func apply_knockback(delta):
-	velocity = Vector2(0, 0)
-	self.global_position = self.global_position.lerp(knockback_target_point, knockback_force * delta)
-	move_and_slide()
-
 func _on_knockback_reset():
-	knockbacked = false
+	super._on_knockback_reset()
 	if stun_timer.is_stopped():
 		set_idle()
-
-func _on_change_stats(stat, amount, time_duration, ally_sender):
-	if (is_in_atk_range and !grabbed) or time_duration == 0 or ally_sender:
-		if "str" in stat:
-			current_str += amount
-		elif "tem" in stat:
-			current_tem += amount
-		elif "des" in stat:
-			current_des += amount
-		elif "pbc" in stat:
-			current_pbc += amount
-		elif "efc" in stat:
-			current_efc += amount
-		
-		
-		if time_duration != 0:
-			if amount > 0:
-				status_sprite.play("buff")
-			else:
-				status_sprite.play("debuff")
-			add_child(load("res://scenes/miscellaneous/time_of_change.tscn").instantiate(),true)
-			var new_timer = get_child(get_child_count()-1)
-			new_timer.stat = stat
-			new_timer.amount = -amount
-			new_timer.wait_time = time_duration
-			new_timer.reset_stats.connect(self._on_change_stats)
-			new_timer.start()
-
-func _on_status_alert_sprite_animation_finished():
-	status_sprite.play("idle")

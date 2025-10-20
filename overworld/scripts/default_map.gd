@@ -41,8 +41,8 @@ func _on_gui_select_character(char: String) -> void:
 		var player_scene
 		if char == "jack":
 			player_scene = load("res://overworld/scenes/players/jack_wander.tscn")
-		elif char == "rufus":
-			player_scene = load("res://overworld/scenes/players/rufus_wander.tscn")
+		elif char == "tyrone":
+			player_scene = load("res://overworld/scenes/players/tyrone_wander.tscn")
 		
 		add_child(player_scene.instantiate(),true)
 		var instantiated_node = get_child(get_child_count()-1)

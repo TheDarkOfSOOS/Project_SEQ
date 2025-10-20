@@ -28,7 +28,7 @@ var line : Line2D
 var scene_manager : Node2D
 
 # ogni quante ondata spawna un boss
-var boss_round : int = 10
+var boss_round : int = 1
 
 signal round_changed() # segnale che manda alla GUI per incrementare il counter
 signal heal_between_rounds(amount) # segnale che manda al player per curarlo
@@ -163,8 +163,8 @@ func activate_markers():
 			#else: # altrimenti
 			out = true # seleziono il percorso
 		
-		add_child(enemy_scene.instantiate(),true) # insanzio come nodo figlio il nemico
-		#add_child(possible_enemies[randi_range(0, 0)].instantiate(),true) # debug
+		#add_child(enemy_scene.instantiate(),true) # insanzio come nodo figlio il nemico
+		add_child(possible_enemies[randi_range(0, 1)].instantiate(),true) # debug
 		
 		# setto la posizione del nemico spawnato al marker attivo
 		get_child(-1).position = i.position 

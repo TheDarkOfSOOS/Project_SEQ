@@ -1,30 +1,8 @@
-extends CharacterBody2D
-
-@export var default_vit : int = 70
-var current_vit = default_vit
-@export var default_str : int = 110
-var current_str = default_str
-@export var default_tem : int = 100
-var current_tem = default_tem
-@export var default_des : int = 150
-var current_des = default_des
-@export var default_pbc : int = 30
-var current_pbc = default_pbc
-@export var default_efc : float = 1.5
-var current_efc = default_efc
-
-@export var knockback_controller_node : PackedScene
+class_name Skeleton extends Enemy
 
 var scene_manager : Node2D
 
-var is_in_atk_range = false
-var moving = true
-var grabbed = false
 var grab_position
-
-var knockbacked = false
-var knockback_target_point
-var knockback_force
 
 var parring = false
 var dying = false
@@ -40,7 +18,6 @@ signal shake_camera(shake, strenght)
 
 var player_position
 var target_position
-var player
 
 enum Possible_Attacks {IDLE, BASIC_ATK, PARRY}
 var choosed_atk
@@ -48,7 +25,6 @@ var choosed_atk
 @onready var sprite = $Sprite2D
 @onready var basic_atk_effect = $Basic_atk_Area/Effect
 @onready var basic_atk_collider = $Basic_atk_Area/Skill_collider
-@onready var stun_timer = $Stun
 @onready var body_collider = $Body_collider
 
 @onready var parry_time = $Parry_time
@@ -59,12 +35,7 @@ var choosed_atk
 
 @onready var healthbar = $HealthBar
 
-@onready var hitmarker_spawnpoint = $Hitmarker_spawn
-
-@onready var status_sprite = $Status_alert_sprite
-
 @onready var update_atk_timer = $Update_Atk
-@onready var hit_flash_player = $Hit_flash_player
 
 @onready var slash_cooldown = $Basic_atk_Cooldown
 @onready var patty_cooldown = $Parry_Cooldown
@@ -77,6 +48,9 @@ var player_in_atk_range = false
 	setta la barra della salute'
 
 func _ready():
+	var stats : Stats = load("res://components/resources/stats/skeleton_stats.tres")
+	load_stats(stats)
+	
 	healthbar.max_value = current_vit
 	set_health_bar()
 	sprite.play("idle")
@@ -136,26 +110,19 @@ func flip(distance_to_player):
 			sprite.rotation_degrees = 90;
 
 func chase_player():
-	if player:
+	if player and not knockbacked:
 		navigation_agent.target_position = player.global_position
+		target_position = navigation_agent.get_next_path_position()
 		
 		if navigation_agent.is_navigation_finished():
 			if sprite.animation == "running":
 				sprite.play("idle")
 		else:
-			target_position = navigation_agent.get_next_path_position()
-			
-			var new_velocity = global_position.direction_to(target_position) * current_des
-			
-			if navigation_agent.avoidance_enabled:
-				navigation_agent.set_velocity(new_velocity)
-			else:
-				_on_navigation_agent_2d_velocity_computed(new_velocity)
+			self.velocity = global_position.direction_to(target_position) * current_des
 			
 			sprite.play("running")
 			move_and_slide()
-		player_position = (player.position - position).normalized()
-		flip(player_position)
+		flip((target_position - self.position).normalized())
 
 func choose_atk():
 	var rng = randi_range(0,100)
@@ -166,26 +133,9 @@ func choose_atk():
 	elif rng >= 55:
 		choosed_atk = Possible_Attacks.PARRY
 		
-	choosed_atk = Possible_Attacks.PARRY
+	#choosed_atk = Possible_Attacks.PARRY
 
 # -------- SIGNAL DIGEST -------- #
-
-'DIGEST DEL SEGNALE DEL PLAYER "is_in_atk_range"
-{
-	PARAMETRI
-	boolean is_in: identifica se il nodo è entrato oppure è uscito
-	Node body: identifica il nodo che è entrato o uscito
-}
-	se il segnale che manda al nodo è di entrata nel\'area e il nodo è questo
-		allora il nodo è dentro l\'area del player
-	altrimenti
-		non è in range'
-
-func _on_player_is_in_atk_range(is_in, body):
-	if is_in and body == self:
-		is_in_atk_range = is_in
-	else:
-		is_in_atk_range = false
 
 'DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
 {
@@ -210,10 +160,10 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 		else:
 			current_vit -= dmg
 		if dmg > 0 and not dying:
-			scene_manager.emit_hit_particles(sender, self)
+			emit_hit_particles(sender)
 			hit_flash_player.stop()
 			hit_flash_player.play("hit_flash")
-			scene_manager.show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
+			show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
 			emit_signal("shake_camera", true, dmg_info[2])
 		if stun_sec > 0 and not (dying or soul_out):
 			moving = false
@@ -223,6 +173,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 		set_health_bar()
 	
 	elif is_in_atk_range and !grabbed and parring:
+		show_hitmarker("Parato", false, hitmarker_spawnpoint)
 		parry_time.start(0.8)
 
 # DIGEST DEL SENGALE DEL PLAYER "grab" #
@@ -360,60 +311,10 @@ func _on_sprite_2d_animation_finished():
 		dying = false
 		set_idle()
 
-
-func _on_navigation_agent_2d_velocity_computed(safe_velocity):
-	velocity = safe_velocity
-
 func init_knockback(amount, force, sender):
-	if is_in_atk_range and not grabbed and not parring:
-		velocity = Vector2(0, 0)
-		moving = false
-		knockbacked = true
-		
-		knockback_target_point = self.global_position + (sender.direction_to(self.global_position) * amount)
-		knockback_force = force
-		
-		self.add_child(knockback_controller_node.instantiate(), true)
-		var knockback_controller = get_child(-1)
-		knockback_controller.reparent(get_parent())
-		knockback_controller.target_point = knockback_target_point
-		knockback_controller.vel_multiplyer = force
-		knockback_controller.caller = self
-		knockback_controller.target_reached.connect(self._on_knockback_reset)
-
-func apply_knockback(delta):
-	velocity = Vector2(0, 0)
-	self.global_position = self.global_position.lerp(knockback_target_point, knockback_force * delta)
-	move_and_slide()
-
-func _on_knockback_reset():
-	knockbacked = false
+	if not parring:
+		super.init_knockback(amount, force, sender)
 
 func _on_change_stats(stat, amount, time_duration, ally_sender):
-	if (is_in_atk_range and !grabbed) or time_duration == 0 or ally_sender:
-		if "str" in stat:
-			current_str += amount
-		elif "tem" in stat:
-			current_tem += amount
-		elif "des" in stat:
-			current_des += amount
-		elif "pbc" in stat:
-			current_pbc += amount
-		elif "efc" in stat:
-			current_efc += amount
-		
-		if time_duration != 0:
-			if amount > 0:
-				status_sprite.play("buff")
-			else:
-				status_sprite.play("debuff")
-			add_child(load("res://scenes/miscellaneous/time_of_change.tscn").instantiate(),true)
-			var new_timer = get_child(get_child_count()-1)
-			new_timer.stat = stat
-			new_timer.amount = -amount
-			new_timer.wait_time = time_duration
-			new_timer.reset_stats.connect(self._on_change_stats)
-			new_timer.start()
-
-func _on_status_alert_sprite_animation_finished():
-	status_sprite.play("idle")
+	if not parring:
+		super._on_change_stats(stat, amount, time_duration, ally_sender)

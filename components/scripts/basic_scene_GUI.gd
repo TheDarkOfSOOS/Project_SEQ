@@ -39,9 +39,6 @@ func _on_boss_set_healthbar(vit):
 		boss.set_idle_timer.stop()
 		boss.stun_timer.stop()
 		animation_player.play("delete_boss_bar")
-		Engine.time_scale = 0.1
-		await get_tree().create_timer(0.4, true, false, false).timeout
-		Engine.time_scale = 1.0
 		if QuestManager.quests["the_bigger_they_are"].status == QuestStatus.of_type.started:
 			QuestManager.quests["the_bigger_they_are"].reach_goal_quest()
 	if vit > max_health:

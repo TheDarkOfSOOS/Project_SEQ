@@ -16,9 +16,9 @@ var pulled_rarities : Array
 var player_in_range = false
 
 func _physics_process(_delta: float) -> void:
-	if Input.is_action_just_pressed("ui_accept") and player_in_range and player.can_move:
-		player._on_set_idle()
-		player.can_move = false
+	if Input.is_action_just_pressed("ui_accept") and player_in_range and player.moving:
+		player.set_idle()
+		player.moving = false
 		var powerup_dialog_instance = powerup_dialog_scene.instantiate()
 		powerup_dialog_instance.pows = pulled_powerups
 		powerup_dialog_instance.rars = pulled_rarities
@@ -30,7 +30,7 @@ func _physics_process(_delta: float) -> void:
 		await powerup_dialog_instance.tree_exited
 		
 		Menu.game_status = Menu.GAME_STATUSES.dungeon
-		player.can_move = true
+		player.moving = true
 		player.can_interact_with_something = false
 		pickup_range.monitoring = false
 		sprite_2d.visible = false

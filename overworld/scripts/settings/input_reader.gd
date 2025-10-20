@@ -1,6 +1,6 @@
 extends Control
 
-@onready var action_label = %ActionLabel
+#@onready var action_label = %ActionLabel
 @onready var back_to_menu_delay = %BackToMenuDelay
 var keyboard_text : Button
 var gamepad_text : Button

@@ -18,7 +18,7 @@ enum GAME_STATUSES{
 @onready var input_back_button = %InputBackButton
 @onready var continue_button = %ContinueButton
 @onready var re_open_menu_delay = %ReOpenMenuDelay
-@onready var internal_menu_delay = %InternalMenuDelay
+#@onready var internal_menu_delay = %InternalMenuDelay
 @onready var all_quest_filter = %AllQuestFilter
 @onready var quest_container = %QuestContainer
 @onready var pause_ost = %Pause_ost_player

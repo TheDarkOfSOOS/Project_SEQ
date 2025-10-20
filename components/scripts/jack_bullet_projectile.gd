@@ -61,7 +61,9 @@ func _on_area_to_impact_body_entered(body):
 					
 				emit_signal("inflict_knockback", 10+temp[0], 0.7, self.global_position)
 		body.is_in_atk_range = false
-		queue_free()
+		_on_time_to_live_timeout()
+	if body is TileMapLayer:
+		_on_time_to_live_timeout()
 
 func _on_time_to_live_timeout():
 	queue_free()

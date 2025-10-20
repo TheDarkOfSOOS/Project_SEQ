@@ -5057,6 +5057,7 @@ tile_map_data = PackedByteArray("AAAqAAoABgADAAUAAAAqAAsABgADAAUAAAAqAAwABgADAAU
 tile_set = SubResource("TileSet_5xdkc")
 
 [node name="Boundaries" type="StaticBody2D" parent="."]
+visible = false
 collision_priority = 999999.0
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Boundaries"]

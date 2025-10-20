@@ -1,8 +1,7 @@
-[gd_scene load_steps=157 format=3 uid="uid://cdj6vi8f58cl0"]
+[gd_scene load_steps=156 format=3 uid="uid://cdj6vi8f58cl0"]
 
-[ext_resource type="Script" uid="uid://cqmhu2e8k4wws" path="res://components/scripts/rufus.gd" id="1_kqagk"]
+[ext_resource type="Script" uid="uid://cqmhu2e8k4wws" path="res://components/scripts/tyrone.gd" id="1_kqagk"]
 [ext_resource type="Texture2D" uid="uid://b2uag3j6vt8fm" path="res://components/sprites/rufus/Rufus_base_atk1.png" id="2_qcuyf"]
-[ext_resource type="PackedScene" uid="uid://b8m3imv5eplab" path="res://scenes/miscellaneous/knockback_controller.tscn" id="3_0ux1b"]
 [ext_resource type="Texture2D" uid="uid://g2nafuf0dsep" path="res://components/sprites/rufus/Rufus_running.png" id="3_460on"]
 [ext_resource type="Shader" uid="uid://c3ywoxg7w2n4d" path="res://components/shaders/hit_shader.gdshader" id="4_3dgml"]
 [ext_resource type="Texture2D" uid="uid://cd5lkvnepjij0" path="res://components/sprites/rufus/Rufus_base_atk2.png" id="4_br4vc"]
@@ -1099,7 +1098,6 @@ collision_mask = 4
 collision_priority = 99999.0
 motion_mode = 1
 script = ExtResource("1_kqagk")
-knockback_controller_node = ExtResource("3_0ux1b")
 
 [node name="Hitmarker_spawn" type="Marker2D" parent="."]
 position = Vector2(0, -53.3333)
@@ -1108,7 +1106,7 @@ position = Vector2(0, -53.3333)
 material = SubResource("ShaderMaterial_3ojpq")
 scale = Vector2(0.15, 0.15)
 sprite_frames = SubResource("SpriteFrames_dte57")
-animation = &"idle"
+animation = &"base atk5"
 autoplay = "idle"
 
 [node name="Status_alert_sprite" type="AnimatedSprite2D" parent="."]
@@ -1227,7 +1225,6 @@ one_shot = true
 [node name="Ulti_cooldown" type="Timer" parent="."]
 wait_time = 60.0
 one_shot = true
-autostart = true
 
 [node name="Combo_time" type="Timer" parent="."]
 wait_time = 0.4
@@ -1242,7 +1239,6 @@ libraries = {
 }
 
 [connection signal="get_healed" from="." to="." method="_on_get_healed"]
-[connection signal="set_idle" from="." to="." method="_on_set_idle"]
 [connection signal="animation_finished" from="Sprite2D" to="." method="_on_sprite_2d_animation_finished"]
 [connection signal="frame_changed" from="Sprite2D" to="." method="_on_sprite_2d_frame_changed"]
 [connection signal="animation_finished" from="Status_alert_sprite" to="." method="_on_status_alert_sprite_animation_finished"]

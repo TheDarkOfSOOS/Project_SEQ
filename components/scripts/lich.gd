@@ -1,22 +1,4 @@
-extends CharacterBody2D
-
-var boss_name = "Archalom L'esiliato"
-
-@export var default_vit : int = 1500
-#@export var default_vit : int = 15
-var current_vit = default_vit
-@export var default_str : int = 190
-var current_str = default_str
-@export var default_tem : int = 150
-var current_tem = default_tem
-@export var default_des : int = 145
-var current_des = default_des
-@export var default_pbc : int = 35
-var current_pbc = default_pbc
-@export var default_efc : float = 1.2
-var current_efc = default_efc
-
-@export var knockback_controller_node : PackedScene
+extends Boss
 
 var scene_manager : Node2D
 
@@ -25,13 +7,7 @@ var scene_manager : Node2D
 @export var death_sphere_scene : PackedScene
 @export var explosion_scene : PackedScene
 
-var is_in_atk_range = false
-var moving = true # variabile che gestisce lo stun
-var grabbed = false # variabile che gestisce il grab
 var grab_position
-var knockbacked = false
-var knockback_target_point
-var knockback_force
 
 var spawning = true # variabile a true finché non finisce l'animazione di spawning, altrimenti false
 var dying = false # variabile a false finché il boss è in vita, poi a true per l'animazione di death
@@ -39,18 +15,14 @@ var dying = false # variabile a false finché il boss è in vita, poi a true per
 var MIN_DISTANCE : int = 10
 var MAX_DISTANCE : int = 30
 
-signal set_health_bar(vit)
 signal got_grabbed(is_grabbed)
 signal shake_camera(shake, strenght)
-
-var player
 
 enum Possible_Attacks {IDLE, WITCHCRAFT, DEATH_SPHERE, EXPLOSIONS, EVOCATION, TELEPORT}
 var choosed_atk
 
 # riferimenti ai nodi
 @onready var sprite = $Sprite2D
-@onready var stun_timer = $Stun
 
 @onready var body_collider = $Body_collider
 
@@ -71,11 +43,6 @@ var choosed_atk
 @onready var explosions_cooldown = $Explosions_Cooldown
 @onready var evocation_cooldown = $Evocation_Cooldown
 
-@onready var hitmarker_spawnpoint = $Hitmarker_spawn
-@onready var hit_flash_player = $Hit_flash_player
-
-@onready var status_sprite = $Status_alert_sprite
-
 @onready var update_atk_timer = $Update_Atk
 @onready var set_idle_timer = $Inhale_time
 
@@ -91,9 +58,9 @@ var evocation_locations = []
 
 # array che contiene il percorso delle scene dei nemici evocabili, da rivedere
 var evocable_entities = [
-						"res://scenes/enemies/zombie.tscn",
-						"res://scenes/enemies/skeleton.tscn",
-						"res://scenes/enemies/giant.tscn"
+						preload("res://scenes/enemies/zombie.tscn"),
+						preload("res://scenes/enemies/skeleton.tscn"),
+						preload("res://scenes/enemies/giant.tscn")
 						]
 
 # contatore per evitare l'istanzia di due nodi con lo stesso nome, casini nei connect
@@ -102,7 +69,12 @@ var evocation_count = 0
 'METODO CHE PARTE QUANDO VIENE ISTANZIATO IL NODO'
 
 func _ready():
-	emit_signal("set_health_bar", current_vit)
+	boss_name = "Archalom L'esiliato"
+	
+	var stats : Resource = load("res://components/resources/stats/lich_stats.tres")
+	load_stats(stats)
+	
+	emit_signal("set_health_bar", default_vit)
 	sprite.play("spawn")
 	
 	ground_tilemap_layer = get_parent().get_parent().find_child("Ground",true,false)
@@ -120,13 +92,13 @@ func _ready():
 		third_round_explosions.append(i)
 	
 
-'METODO CHE VIENE PROCESSATO PER FRAME
-	controlla se il player è entrato in area e si può muovere
-		allora si muove
-	altrimenti se il player NON è entrato in area e si può muovere
-		allora comincia a vagare
-	controlla se è grabbato
-		allora fa partire il metodo grab()'
+#METODO CHE VIENE PROCESSATO PER FRAME
+	#controlla se il player è entrato in area e si può muovere
+		#allora si muove
+	#altrimenti se il player NON è entrato in area e si può muovere
+		#allora comincia a vagare
+	#controlla se è grabbato
+		#allora fa partire il metodo grab()
 
 func _physics_process(delta):
 	if dying: # se sta morendo ignoro qualsiasi altro processo
@@ -189,41 +161,24 @@ func choose_atk():
 	else:
 		choosed_atk = Possible_Attacks.WITCHCRAFT # 25%
 	
-	#choosed_atk = Possible_Attacks.EVOCATION
+	choosed_atk = Possible_Attacks.EVOCATION
 
 # -------- SIGNAL DIGEST -------- #
 
-'DIGEST DEL SEGNALE DEL PLAYER "is_in_atk_range"
-{
-	PARAMETRI
-	boolean is_in: identifica se il nodo è entrato oppure è uscito
-	Node body: identifica il nodo che è entrato o uscito
-}
-	se il segnale che manda al nodo è di entrata nel\'area e il nodo è questo
-		allora il nodo è dentro l\'area del player
-	altrimenti
-		non è in range'
-
-func _on_player_is_in_atk_range(is_in, body):
-	if is_in and body == self:
-		is_in_atk_range = is_in
-	else:
-		is_in_atk_range = false
-
-'DIGEST DEL SEGNALE DEL PLAYER "take_dmg_info"
-{
-	PARAMETRI
-	int atk_state: DEPRECATO
-	int dmg_info: quantità del danno inflitto
-	float sec: tempo dello stun
-}
-	se il nodo è in range e non è grabbato
-		allora sottraggo alla vita il danno
-		setto la barra della vita con il nuovo valore
-		# print di debug #
-		impedisco al nodo di muoversi mentre viene attaccato
-		imposto il tempo di stun con il parametro passato
-		faccio partire il timer dello stun'
+#DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
+#{
+	#PARAMETRI
+	#int atk_state: DEPRECATO
+	#int dmg_info: quantità del danno inflitto
+	#float sec: tempo dello stun
+#}
+	#se il nodo è in range e non è grabbato
+		#allora sottraggo alla vita il danno
+		#setto la barra della vita con il nuovo valore
+		## print di debug #
+		#impedisco al nodo di muoversi mentre viene attaccato
+		#imposto il tempo di stun con il parametro passato
+		#faccio partire il timer dello stun
 
 func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, sender):
 	if not spawning and not dying:
@@ -231,7 +186,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 			var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 			current_vit -= dmg_info[0]
 			emit_signal("set_health_bar", current_vit)
-			scene_manager.show_hitmarker("-" + str(dmg_info[0]), dmg_info[1], hitmarker_spawnpoint)
+			show_hitmarker("-" + str(dmg_info[0]), dmg_info[1], hitmarker_spawnpoint)
 			
 			# sto stronzo ha uno stun_reduction, cioè diminuisce i secondi di stun
 			stun_sec -= 0.5
@@ -240,7 +195,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 				stun_sec = 0 # semplicemente li riporta a 0
 			
 			if dmg_info[0] > 0:
-				scene_manager.emit_hit_particles(sender, self)
+				emit_hit_particles(sender)
 				hit_flash_player.stop()
 				hit_flash_player.play("hit_flash")
 				emit_signal("shake_camera", true, dmg_info[2])
@@ -288,7 +243,7 @@ func _on_sprite_2d_frame_changed():
 
 func _on_sprite_2d_animation_finished():
 	if sprite.animation == "spawn":
-		$Update_Atk.start()
+		update_atk_timer.start()
 		sprite.play("idle")
 		spawning = false
 	elif sprite.animation == "death":
@@ -306,13 +261,13 @@ func _on_sprite_2d_animation_finished():
 func _on_update_atk_timeout():
 	if not dying:
 		choose_atk()
-		$Update_Atk.start()
+		update_atk_timer.start()
 
 # METODO CHE FA TELETRASPORTARE IL LICH IN UNO DEI WAYPOINT
 func teleport():
 	var target_coord_vector : Vector2
 	var cell_position : Vector2i
-	var cell_properties
+	var cell_properties = null
 	var cont : int = 0
 	var interval_reduction : int = 0
 	
@@ -323,8 +278,7 @@ func teleport():
 			cont = 0
 			interval_reduction += 5
 		cell_position = Vector2i(randi_range(cell_position.x + MIN_DISTANCE - interval_reduction, cell_position.x + MAX_DISTANCE - interval_reduction) * [-1, 1].pick_random(), randi_range(cell_position.y + MIN_DISTANCE - interval_reduction, cell_position.y + MAX_DISTANCE - interval_reduction) * [-1, 1].pick_random())
-		
-		print(str(cell_position))
+
 		cell_properties = ground_tilemap_layer.get_cell_tile_data(cell_position)
 		cont += 1
 	
@@ -431,161 +385,43 @@ func evocation():
 	
 	if current_vit <= default_vit and current_vit > _85_health:
 		#evoca uno zombie in un posto casuale
-		add_child(load(evocable_entities[0]).instantiate(),true)
-		var evocated_entity = get_child(-1,true)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-	
+		summon_minion(0)
 	if current_vit <= _85_health and current_vit > _70_health:
 		#evoca due zombie uno alla posizione 0 e l'altro alla posizione 1
-		add_child(load(evocable_entities[0]).instantiate(),true)
-		var evocated_entity = get_child(-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-		
-		add_child(load(evocable_entities[1]).instantiate(),true)
-		evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-	
+		summon_minion(0)
+		summon_minion(1)
 	if current_vit <= _70_health and current_vit > _50_health:
 		#evoca due zombie e uno scheletro nelle tre posizioni
-		add_child(load(evocable_entities[0]).instantiate(),true)
-		var evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-		
-		add_child(load(evocable_entities[0]).instantiate(),true)
-		evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-		
-		add_child(load(evocable_entities[1]).instantiate(),true)
-		evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-	
+		summon_minion(0)
+		summon_minion(0)
+		summon_minion(1)
 	if current_vit <= _50_health and current_vit > _30_health:
-		#evoca un gigante nella posizione 2
-		add_child(load(evocable_entities[2]).instantiate(),true)
-		var evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-	
+		summon_minion(2)
 	if current_vit <= _30_health and current_vit > _20_health:
 		#evoca un gigante nella posizione 2 e uno zombie nella posizione 0
-		add_child(load(evocable_entities[2]).instantiate(),true)
-		var evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-		
-		add_child(load(evocable_entities[0]).instantiate(),true)
-		evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-	
+		summon_minion(0)
+		summon_minion(2)
 	if current_vit <= _20_health:
 		#evoca tutte le entità in tutte le posizioni in ordine di indice crescente
-		add_child(load(evocable_entities[0]).instantiate(),true)
-		var evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-		
-		add_child(load(evocable_entities[1]).instantiate(),true)
-		evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-		
-		add_child(load(evocable_entities[2]).instantiate(),true)
-		evocated_entity = get_child(get_child_count()-1)
-		evocated_entity.position = evocation_locations.pick_random().position
-		evocation_count += 1
-		evocated_entity.name += "_"+str(evocation_count)
-		evocated_entity.reparent(get_parent())
-	
+		summon_minion(0)
+		summon_minion(1)
+		summon_minion(2)
 	# faccio partire il metodo dello scene manager per connettere i nemici spawnati con il player
 	get_parent().get_parent().get_parent().connect_enemies_with_player()
 	evocation_cooldown.start() # faccio partire il cooldown
 
-
-
-# //////////// AREA COMUNE TRA NODI //////////// #
-
-func init_knockback(amount, force, sender):
-	if is_in_atk_range and not grabbed:
-		velocity = Vector2(0, 0)
-		moving = false
-		knockbacked = true
-		
-		knockback_target_point = self.global_position + (sender.direction_to(self.global_position) * amount)
-		knockback_force = force
-		
-		self.add_child(knockback_controller_node.instantiate(), true)
-		var knockback_controller = get_child(-1)
-		knockback_controller.reparent(get_parent())
-		knockback_controller.target_point = knockback_target_point
-		knockback_controller.vel_multiplyer = force
-		knockback_controller.caller = self
-		knockback_controller.target_reached.connect(self._on_knockback_reset)
-
-func apply_knockback(delta):
-	velocity = Vector2(0, 0)
-	self.global_position = self.global_position.lerp(knockback_target_point, knockback_force * delta)
-	move_and_slide()
+func summon_minion(index : int) -> void:
+	add_child(evocable_entities[index].instantiate(),true)
+	var evocated_entity = get_child(get_child_count()-1)
+	evocation_count += 1
+	evocated_entity.name += "_"+str(evocation_count)
+	evocated_entity.reparent(get_parent())
+	evocated_entity.position = evocation_locations.pick_random().position
 
 func _on_knockback_reset():
-	knockbacked = false
+	super._on_knockback_reset()
 	if stun_timer.is_stopped() and not dying:
 		set_idle()
-
-func _on_change_stats(stat, amount, time_duration, ally_sender):
-	if (is_in_atk_range and !grabbed) or time_duration == 0 or ally_sender:
-		if "str" in stat:
-			current_str += amount
-		elif "tem" in stat:
-			current_tem += amount
-		elif "des" in stat:
-			current_des += amount
-		elif "pbc" in stat:
-			current_pbc += amount
-		elif "efc" in stat:
-			current_efc += amount
-		
-		
-		if time_duration != 0:
-			if amount > 0:
-				status_sprite.play("buff")
-			else:
-				status_sprite.play("debuff")
-			add_child(load("res://scenes/miscellaneous/time_of_change.tscn").instantiate(),true)
-			var new_timer = get_child(get_child_count()-1)
-			new_timer.stat = stat
-			new_timer.amount = -amount
-			new_timer.wait_time = time_duration
-			new_timer.reset_stats.connect(self._on_change_stats)
-			new_timer.start()
 
 func _on_status_alert_sprite_animation_finished():
 	status_sprite.play("idle")

@@ -1,13 +1,16 @@
 extends Node2D
 
 var player : CharacterBody2D
-var selected_character
-var paused : bool = false
+# variabile di controllo per tenere il personaggio selezionato tra le scene
+var selected_character 
 var connected : bool = false
 # serve come indice per scorrere i tileset
 var boss_defeted_count : int = 0
+# tileset istanziato attualmente
 var active_tileset : Node2D
+# container dei nemici attualmente istanziato
 var active_enemy_container : Node2D
+# tutti i tipi di attacco
 @onready var Attack_Types = get_tree().get_first_node_in_group("gm").Attack_Types
 
 # il nodo canvaslayer serve per fissare la gui allo schermo
@@ -24,19 +27,16 @@ var active_enemy_container : Node2D
 var player_gui
 @onready var powerup_handler : Node = $Powerup_handler
 
-@export var hitmarker_scene : PackedScene
-@export var hit_particles_scene : PackedScene
-
 # percorso che porta al nodo del camera follower
 var camera_follower : String = "res://scenes/miscellaneous/camera_follower.tscn"
 
 # array che contiene i tileset
 var tilesets : Array = [
+						"res://scenes/tilemaps/deep_forest_2_tilemap.tscn",
+						"res://scenes/tilemaps/deep_forest_tile_map.tscn",
 						"res://scenes/tilemaps/forest_2_tilemap.tscn",
 						"res://scenes/tilemaps/gray_tile_map.tscn",
-						#"res://scenes/tilemaps/lightblue_tile_map.tscn",
-						"res://scenes/tilemaps/forest_tile_map.tscn",
-						"res://scenes/tilemaps/deep_forest_tile_map.tscn"
+						"res://scenes/tilemaps/forest_tile_map.tscn"
 						]
 
 var portal_scene = preload("res://scenes/miscellaneous/travel_portal.tscn")
@@ -90,23 +90,23 @@ func _process(_delta):
 			connect_enemies_with_player()
 			connected = true
 
-'ISTANZIA IL PLAYER IN BASE ALLA SELEZIONE DEL NODO GUI
-	in base al pulsante selezionato carica la sua scena e la istanzia
-	setta il parametro player della root con il nodo appena creato e gli setta la scala
-	crea il nodo Camera2D e la istanzia come figlio del player
-	se il player ha segnali con la camera aggiunge il suo script, altrimenti va avanti
-	rinomina il nodo camera in Camera2D
-	fa partire il metodo "connect_enemys_with_player"
-	toglie l\'istanzia della GUI'
+#ISTANZIA IL PLAYER IN BASE ALLA SELEZIONE DEL NODO GUI
+	#in base al pulsante selezionato carica la sua scena e la istanzia
+	#setta il parametro player della root con il nodo appena creato e gli setta la scala
+	#crea il nodo Camera2D e la istanzia come figlio del player
+	#se il player ha segnali con la camera aggiunge il suo script, altrimenti va avanti
+	#rinomina il nodo camera in Camera2D
+	#fa partire il metodo "connect_enemys_with_player"
+	#toglie l'istanzia della GUI
 
-func _on_gui_select_character(char):
+func _on_gui_select_character(character):
 	var player_scene
-	selected_character = char
-	if char == "jack":
+	selected_character = character
+	if selected_character == "jack":
 		player_scene = load("res://scenes/characters/jack.tscn")
-	elif char == "rufus":
-		player_scene = load("res://scenes/characters/rufus.tscn")
-	elif char == "nathan":
+	elif selected_character == "tyrone":
+		player_scene = load("res://scenes/characters/tyrone.tscn")
+	elif selected_character == "nathan":
 		player_scene = load("res://scenes/characters/nathan.tscn")
 	add_child(player_scene.instantiate())
 	get_child(get_child_count()-1).name = "Player"
@@ -124,7 +124,7 @@ func _on_gui_select_character(char):
 	#camera.zoom = Vector2(0.5,0.5)
 	
 	# condizione per collegare lo script della telecamera
-	if char == "nathan":
+	if selected_character == "nathan":
 		player.scale = Vector2(1.4, 1.4)
 	activate_player_GUI() # funzione per attivare le GUI
 	connect_enemies_with_player() # connetto i nemici e il player
@@ -163,7 +163,7 @@ func connect_enemies_with_player(): #connette i segnali tra il player e i nemici
 			if player.char_name == "Nathan": # connetto il segnale della grab
 				player.grab.connect(current_node._on_player_grab)
 				current_node.got_grabbed.connect(player_gui._on_nathan_grab)
-			elif player.char_name == "Rufus": # connetto il segnale del knockback e del cambio statistiche
+			elif player.char_name == "Tyrone": # connetto il segnale del knockback e del cambio statistiche
 				player.change_stats.connect(current_node._on_change_stats)
 				player.inflict_knockback.connect(current_node.init_knockback)
 			elif player.char_name == "Jack": # connetto il segnale del knockback
@@ -201,14 +201,14 @@ func connect_player_projectile(projectile):
 			projectile.take_dmg.connect(current_node._on_player_take_dmg)
 			projectile.inflict_knockback.connect(current_node.init_knockback)
 
-func calculate_dmg(str, atk_str, tem, pbc, efc, type, caller):
+func calculate_dmg(strenght, atk_str, tem, pbc, efc, type, caller):
 	var crit = false
 	var shake_amount = 0
 	var dmg : int
 	if tem <= 0:
 		tem = 1
 	# applico la formula del danno: (FORZA_ATTACCANTE * FORZA DELL'ATTACCO) / TEMPRA_BERSAGLIO
-	dmg = round((str * atk_str) / tem)
+	dmg = round((strenght * atk_str) / tem)
 	var rng = randi_range(0, 100) # genero un numero casuale tra 0 e 100
 	if pbc > rng: # se la probabilità brutto colpo è più alta del numero generato (esempio: 30 > 20)
 		# aumento il danno in base all'efficienza del colpo critico (es. 15 * 1.5 = 15 + 7.5 = 22.5 = 23)
@@ -217,49 +217,12 @@ func calculate_dmg(str, atk_str, tem, pbc, efc, type, caller):
 		if "Enemy" in caller.name:
 			powerup_handler.apply_powerup_boost("Vivian")
 	
+	# controllo il tipo di attacco
 	if type == Attack_Types.PHYSICAL:
 		shake_amount = dmg / 3
 		if shake_amount <= 0:
 			shake_amount = 5
 	return [dmg, crit, shake_amount]
-
-# METODO GLOBALE PER FAR COMPARIRE L'HITMARKER 
-func show_hitmarker(dmg, crit, hitmarker_spawnpoint):
-	# istanzio l'hitmarker 
-	var hitmarker = hitmarker_scene.instantiate()
-	# lo posiziono nello spawnpoint
-	hitmarker.position = hitmarker_spawnpoint.global_position
-	
-	# creo il tween per lo spostamento casuale
-	var tween = get_tree().create_tween()
-	tween.tween_property(hitmarker, 
-						"position", 
-						hitmarker_spawnpoint.global_position + (Vector2(randf_range(-1,1), -randf()) * 40), 
-						0.75)
-	
-	# cambio la label nella scena (che sono sicuro sia il child 0) con il danno
-	hitmarker.get_child(0).text = dmg
-	# se il danno è un crit
-	if crit:
-		# cambio il colore della label in oro
-		hitmarker.get_child(0).set("theme_override_colors/font_color", Color.GOLDENROD)
-	# aggiungo l'hitmarker alla scena
-	self.add_child(hitmarker)
-
-# METODO GLOBALE PER SPAWNARE LE PARTICELLE DI HIT
-func emit_hit_particles(attacker, target):
-	# istanzio le particelle
-	var particles : GPUParticles2D = hit_particles_scene.instantiate()
-	# le posiziono sul punto di interesse (il target)
-	particles.global_position = target.global_position
-	# ricavo la direzione di dove indirizzarle
-	var direction_of_spawning = attacker.global_position.direction_to(target.global_position)
-	# metto la direzione ricavata nel process_material
-	particles.process_material.direction = Vector3(direction_of_spawning.x, direction_of_spawning.y, 0)
-	# aggiungo le particelle alla scena
-	self.add_child(particles)
-	# le riproduco 
-	particles.emitting = true
 
 # DIGEST DEL SEGNALE DELLA PLAYER_GUI CHE NOTIFICA QUANDO GLI HP SCENDONO A 0
 func _on_player_death():
@@ -273,8 +236,8 @@ func _on_player_death():
 
 func activate_player_GUI():
 	# il pg scelto è Rufus allora insanzia la sua GUI
-	if player.char_name == "Rufus":
-		canvas_layer.add_child(load("res://scenes/GUI/rufus_gui.tscn").instantiate(),true)
+	if player.char_name == "Tyrone":
+		canvas_layer.add_child(load("res://scenes/GUI/tyrone_gui.tscn").instantiate(),true)
 	# il pg scelto è Nathan allora insanzia la sua GUI
 	elif player.char_name == "Nathan": 
 		canvas_layer.add_child(load("res://scenes/GUI/nathan_gui.tscn").instantiate(),true)
@@ -337,12 +300,12 @@ func _on_change_stage():
 	active_enemy_container.instantiate_pickup.connect(powerup_handler._on_instantiate_pickable)
 	powerup_handler.spawn_pickable.connect(active_enemy_container._on_powerup_handler_spawn_pickable)
 
-func _on_canvas_layer_child_entered_tree(node: Node) -> void:
+func _on_canvas_layer_child_entered_tree(_node: Node) -> void:
 	if canvas_layer:
 		for i in canvas_layer.get_children():
 			i.visible = not i.visible
 
-func _on_canvas_layer_child_exiting_tree(node: Node) -> void:
+func _on_canvas_layer_child_exiting_tree(_node: Node) -> void:
 	if canvas_layer:
 		for i in canvas_layer.get_children():
 			i.visible = not i.visible

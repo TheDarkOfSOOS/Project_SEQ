@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=2 format=3 uid="uid://llohkaluoojt"]
+
+[ext_resource type="Script" uid="uid://cxoajg2snndaq" path="res://overworld/scripts/quest/quest.gd" id="1_rh6e0"]
+
+[resource]
+script = ExtResource("1_rh6e0")
+title = "Wombocombo!"
+description = "Sconfiggi un nemico con l'ultimo colpo della combo base di Tyrone"
+steps = 1
+status = 2
+todo = "yey"
+metadata/_custom_type_script = "uid://cxoajg2snndaq"

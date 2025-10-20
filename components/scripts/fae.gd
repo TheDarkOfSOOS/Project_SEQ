@@ -1,37 +1,14 @@
-extends CharacterBody2D
-
-@export var default_vit : int = 60
-var current_vit = default_vit
-@export var default_str : int = 60
-var current_str = default_str
-@export var default_tem : int = 80
-var current_tem = default_tem
-@export var default_des : int = 200
-var current_des = default_des
-@export var default_pbc : int = 45
-var current_pbc = default_pbc
-@export var default_efc : float = 1.5
-var current_efc = default_efc
-
-@export var knockback_controller_node : PackedScene
+class_name Fae extends Enemy
 
 var scene_manager : Node2D
 
-var is_in_atk_range = false
-var moving = true
-var grabbed = false
 var grab_position
-
-var knockbacked = false
-var knockback_target_point
-var knockback_force
 
 signal got_grabbed(is_grabbed)
 signal change_stats(stat, amount, time_duration, ally_sender)
 signal shake_camera(shake, strenght)
 
 var target_position
-var player
 
 enum Possible_Attacks {IDLE, MAGIC_DART, ENCHANTMENT, HEAL}
 var choosed_atk
@@ -40,15 +17,9 @@ var choosed_atk
 
 @onready var sprite = $Sprite2D
 
-@onready var stun_timer = $Stun
-
 @onready var body_collider = $Body_collider
 
 @onready var healthbar = $Control/HealthBar
-
-@onready var hitmarker_spawnpoint = $Hitmarker_spawn
-
-@onready var status_sprite = $Status_alert_sprite
 
 @onready var projectile_spawnpoint = $Projectile_spawnpoint
 
@@ -62,8 +33,6 @@ var choosed_atk
 @onready var enchantment_cooldown = $Enchantment_cooldown
 @onready var heal_cooldown = $Heal_cooldown
 @onready var flee_cooldown = $Flee_cooldown
-
-@onready var hit_flash_player = $Hit_flash_player
 
 @export var magic_dart_projectile_node : PackedScene
 @export var enchantment_projectile_node : PackedScene
@@ -81,6 +50,8 @@ var flee_activated = false
 #	imposta il valore massimo della barra della salute al massimo
 #	setta la barra della salute
 func _ready():
+	var stats : Resource = load("res://components/resources/stats/fae_stats.tres")
+	load_stats(stats)
 	healthbar.max_value = default_vit
 	set_health_bar()
 	sprite.play("idle")
@@ -176,22 +147,6 @@ func choose_atk():
 	
 	#choosed_atk = Possible_Attacks.HEAL
 
-#DIGEST DEL SEGNALE DEL PLAYER "is_in_atk_range"
-#{
-#	PARAMETRI
-#	boolean is_in: identifica se il nodo è entrato oppure è uscito
-#	Node body: identifica il nodo che è entrato o uscito
-#}
-#	se il segnale che manda al nodo è di entrata nell'area e il nodo è questo
-#		allora il nodo è dentro l'area del player
-#	altrimenti
-#		non è in range
-func _on_player_is_in_atk_range(is_in, body):
-	if is_in and body == self and not is_in_atk_range:
-		is_in_atk_range = true
-	else:
-		is_in_atk_range = false
-	
 #DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
 #{
 #	PARAMETRI
@@ -210,11 +165,11 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 	if is_in_atk_range and not grabbed and not knockbacked:
 		var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 		var dmg = dmg_info[0]
-		scene_manager.show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
+		show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
 		current_vit -= dmg
 		set_health_bar()
 		if dmg > 0:
-			scene_manager.emit_hit_particles(sender, self)
+			emit_hit_particles(sender)
 			hit_flash_player.stop()
 			hit_flash_player.play("hit_flash")
 			emit_signal("shake_camera", true, dmg_info[2])
@@ -382,30 +337,8 @@ func _on_update_atk_timeout():
 func _on_navigation_agent_2d_velocity_computed(safe_velocity):
 	velocity = safe_velocity
 
-func init_knockback(amount, force, sender):
-	if is_in_atk_range and not grabbed:
-		velocity = Vector2(0, 0)
-		moving = false
-		knockbacked = true
-		
-		knockback_target_point = self.global_position + (sender.direction_to(self.global_position) * amount)
-		knockback_force = force
-		
-		self.add_child(knockback_controller_node.instantiate(), true)
-		var knockback_controller = get_child(-1)
-		knockback_controller.reparent(get_parent())
-		knockback_controller.target_point = knockback_target_point
-		knockback_controller.vel_multiplyer = force
-		knockback_controller.caller = self
-		knockback_controller.target_reached.connect(self._on_knockback_reset)
-
-func apply_knockback(delta):
-	velocity = Vector2(0, 0)
-	self.global_position = self.global_position.lerp(knockback_target_point, knockback_force * delta)
-	move_and_slide()
-
 func _on_knockback_reset():
-	knockbacked = false
+	super._on_knockback_reset()
 	if not stun_timer.is_stopped():
 		set_idle()
 
@@ -418,32 +351,3 @@ func set_idle():
 		heal_charge_time.stop()
 		flee_timeout_timer.stop()
 		update_atk_timer.start()
-
-func _on_change_stats(stat, amount, time_duration, ally_sender):
-	if (is_in_atk_range and !grabbed) or time_duration == 0 or ally_sender:
-		if "str" in stat:
-			current_str += amount
-		elif "tem" in stat:
-			current_tem += amount
-		elif "des" in stat:
-			current_des += amount
-		elif "pbc" in stat:
-			current_pbc += amount
-		elif "efc" in stat:
-			current_efc += amount
-		
-		if time_duration != 0:
-			if amount > 0:
-				status_sprite.play("buff")
-			else:
-				status_sprite.play("debuff")
-			add_child(load("res://scenes/miscellaneous/time_of_change.tscn").instantiate(),true)
-			var new_timer = get_child(get_child_count()-1)
-			new_timer.stat = stat
-			new_timer.amount = -amount
-			new_timer.wait_time = time_duration
-			new_timer.reset_stats.connect(self._on_change_stats)
-			new_timer.start()
-
-func _on_status_alert_sprite_animation_finished():
-	status_sprite.play("idle")

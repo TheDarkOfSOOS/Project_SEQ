@@ -1,21 +1,4 @@
-extends CharacterBody2D
-
-var char_name = "Rufus"
-
-@export var default_vit : int = 200
-var current_vit = default_vit
-@export var default_str : int = 195
-var current_str = default_str
-@export var default_tem : int = 121
-var current_tem = default_tem
-@export var default_des : int = 145
-var current_des = default_des
-@export var default_pbc : int = 25
-var current_pbc = default_pbc
-@export var default_efc : float = 1.5
-var current_efc = default_efc
-
-@export var knockback_controller_node : PackedScene
+class_name Tyrone extends Player
 
 var scene_manager : Node2D
 
@@ -23,7 +6,6 @@ enum Atk_States {IDLE, BASE_ATK, SK1, SK2, EVA, ULT}
 
 signal is_in_atk_range(is_in, body)
 signal take_dmg(str, atk_str, sec_stun, pbc, efc, type, sender)
-signal set_idle()
 signal set_health_bar(current_vit)
 signal get_healed(amount)
 signal change_stats(stat, amount, time_duration, ally_sender)
@@ -31,7 +13,7 @@ signal inflict_knockback(amount, force, sender)
 signal shake_camera(shake, strenght)
 
 @export var ACCELERATION : float = 10000.0
-@export var FRICTION : float = 7000.0
+@export var FRICTION : float = 6500.0
 
 @onready var axis = Vector2.ZERO
 
@@ -43,15 +25,9 @@ var SKILL1_COLLIDER_POSITION_X
 
 var atk_state = Atk_States.IDLE
 
-var can_move = true
 var can_interact_with_something = false
-var grabbed = false
 var grab_marker
 var grab_sender
-
-var knockbacked = false
-var knockback_target_point
-var knockback_force
 
 var is_evading = false
 
@@ -76,7 +52,7 @@ var ult_moving_mod
 @export var skill2_force = 23
 @export var skill2_stun_time = 1.4
 @export var skill2_changed_stat = "tem"
-@export var skill2_stat_amount = -25
+@export var skill2_stat_amount = -30
 @export var skill2_duration = 10
 @export var skill2_knockback_amount = 300
 @export var skill2_knockback_force = 7.2
@@ -113,13 +89,7 @@ var ult_moving_mod
 
 @onready var body_collider = $Body_collider
 
-@onready var stun_timer = $Stun
 @onready var combo_time = $Combo_time
-
-@onready var status_sprite = $Status_alert_sprite
-@onready var hit_flash_player = $Hit_flash_player
-
-@onready var hitmarker_spawnpoint = $Hitmarker_spawn
 
 @onready var powerup_handler
 
@@ -132,8 +102,11 @@ var ult_moving_mod
 	se ha attivato la skill1
 		esegue il metodo di movimento della skill1'
 
-@warning_ignore("unused_parameter")
 func _ready():
+	var stats : Stats = load("res://components/resources/stats/tyrone_stats.tres")
+	load_stats(stats)
+	char_name = "Tyrone"
+	
 	BASIC_ATK_COLLIDER_POSITION_X = bs_atk_collider.position.x
 	SKILL1_COLLIDER_POSITION_X = skill1_collider.position.x
 	emit_signal("set_health_bar", default_vit)
@@ -143,7 +116,7 @@ func _physics_process(delta):
 		apply_knockback(delta)
 	if grabbed:
 		is_grabbed()
-	if can_move:
+	if moving:
 		move(delta)
 	if stun_timer.is_stopped():
 		atk_handler()
@@ -201,7 +174,7 @@ func reset_axis():
 
 func atk_handler():
 	if Input.is_action_just_pressed("base_atk") and (sprite.animation == "idle" or sprite.animation == "running") and atk_anim_finished and not can_interact_with_something:
-		can_move = false
+		moving = false
 		bs_atk_collider.disabled = false
 		atk_anim_finished = false
 		atk_state = Atk_States.BASE_ATK
@@ -234,7 +207,7 @@ func atk_handler():
 	
 	elif Input.is_action_just_pressed("skill1") and (sprite.animation == "idle" or sprite.animation == "running") and skill1_cooldown.is_stopped() and not can_interact_with_something:
 		skill1_cooldown.start()
-		can_move = false
+		moving = false
 		atk_state = Atk_States.SK1
 		skill1_collider.disabled = false
 		sprite.play("skill1")
@@ -244,7 +217,7 @@ func atk_handler():
 	elif Input.is_action_just_pressed("evade") and (sprite.animation == "idle" or sprite.animation == "running") and eva_cooldown.is_stopped() and not can_interact_with_something:
 		#if not knockbacked and stun_timer.is_stopped() and ult_stop_timer.is_stopped():
 		eva_cooldown.start()
-		can_move = false
+		moving = false
 		atk_state = Atk_States.EVA
 		eva_duration_timer.start()
 		sprite.play("eva")
@@ -253,7 +226,7 @@ func atk_handler():
 	
 	elif Input.is_action_just_pressed("skill2") and (sprite.animation == "idle" or sprite.animation == "running") and skill2_cooldown.is_stopped() and not can_interact_with_something:
 		skill2_cooldown.start()
-		can_move = false
+		moving = false
 		atk_state = Atk_States.SK2
 		sprite.play("skill2")
 		skill2_effect.play("effect")
@@ -261,7 +234,7 @@ func atk_handler():
 
 	elif Input.is_action_just_pressed("ult") and (sprite.animation == "idle" or sprite.animation == "running") and ulti_cooldown.is_stopped() and not can_interact_with_something:
 		ulti_cooldown.start()
-		can_move = false
+		moving = false
 		atk_state = Atk_States.ULT
 		sprite.play("charging_ult")
 		ult_moving_mod = -9
@@ -326,10 +299,10 @@ func _on_ult_area_body_entered(body):
 	if body != self:
 		emit_signal("is_in_atk_range", true, body)
 		emit_signal("take_dmg", current_str, ult_force, ult_stun_time, current_pbc, current_efc, ult_type, self)
+		dramatic_slow_motion(0.3, 1.0)
 		
 		var temp = [ult_knockback_amount, ult_knockback_force]
 		temp = powerup_handler.apply_powerup_boost("Alvin", temp)
-		#print(temp)
 		if temp == null:
 			temp = [0, 0]
 		
@@ -375,7 +348,7 @@ func _on_sprite_2d_animation_finished():
 		combo_time.start()
 
 	if atk_state == Atk_States.BASE_ATK and sprite.animation == "base atk5":
-		emit_signal("set_idle")
+		set_idle()
 
 	elif atk_state == Atk_States.ULT and sprite.animation == "charging_ult":
 		sprite.play("ult_animation")
@@ -449,7 +422,7 @@ func ult_moving():
 		sprite.play()
 
 #  -- set_idle mi permette di resettare il player allo stato di idle --  #
-func _on_set_idle():
+func set_idle():
 	if not grabbed:
 		reset_axis()
 		
@@ -480,37 +453,36 @@ func _on_set_idle():
 		#self.set_collision_mask_value(2, true)
 		self.set_collision_mask_value(3, true)
 		
-		can_move = true
+		moving = true
 		is_evading = false
 		is_moving_ult = false
 		atk_anim_finished = true
 		sprite.position = Vector2.ZERO
 
 func _on_ult_time_timeout():
-	emit_signal("set_idle")
+	set_idle()
 
 '  -- quando finisce l\'effetto della skill allora disattivo l\'area e setto ad idle --  '
 func _on_effect_animation_finished():
 	if atk_state == Atk_States.SK1:
-		emit_signal("set_idle")
+		set_idle()
 
 	elif atk_state == Atk_States.SK2:
-		emit_signal("set_idle")
+		set_idle()
 
 	elif atk_state == Atk_States.ULT:
 		ult_stop_timer.start()
 
 func _on_eva_time_timeout():
-	emit_signal("set_idle")
+	set_idle()
 
 func _on_combo_time_timeout():
-	emit_signal("set_idle")
+	set_idle()
 
 'METODO CHE GESTISCE L\'EVASIONE IN BASE ALLA DIREZIONE PREMUTA'
 func evade():
 	velocity = Vector2.ZERO
 	self.set_collision_layer_value(1, false)
-	self.set_collision_mask_value(2, false)
 	
 	if axis.x == 0 and axis.y < 0:
 		velocity.y += -evade_amount
@@ -542,28 +514,28 @@ func evade():
 func _on_enemy_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, sender):
 	var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 	var dmg = dmg_info[0]
-	scene_manager.show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
+	show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
 	current_vit -= dmg
 	emit_signal("set_health_bar", current_vit)
 	if dmg > 0:
-		scene_manager.emit_hit_particles(sender, self)
+		emit_hit_particles(sender)
 		hit_flash_player.stop()
 		hit_flash_player.play("hit_flash")
 		emit_signal("shake_camera", true, dmg_info[2])
-		if dmg >= default_vit*30/100:
+		if dmg >= (default_vit*30)/100:
 			dramatic_slow_motion()
 	if stun_sec > 0:
-		emit_signal("set_idle")
+		set_idle()
 		sprite.play("damaged")
-		can_move = false
+		moving = false
 		stun_timer.wait_time = stun_sec
 		stun_timer.start()
 
 func _on_enemy_grab(is_been_grabbed, grab_position_marker, sender):
 	if is_been_grabbed and not grabbed:
-		emit_signal("set_idle")
+		set_idle()
 		sprite.play("damaged")
-		can_move = false
+		moving = false
 		grabbed = true
 		
 		self.set_collision_layer_value(1, false)
@@ -584,7 +556,7 @@ func _on_enemy_grab(is_been_grabbed, grab_position_marker, sender):
 			sprite.flip_v = false
 		
 	elif not is_been_grabbed:
-		emit_signal("set_idle")
+		set_idle()
 		grabbed = false
 
 func is_grabbed():
@@ -592,7 +564,7 @@ func is_grabbed():
 	global_position = grab_marker.global_position
 
 func _on_stun_timeout():
-	emit_signal("set_idle")
+	set_idle()
 
 func _on_get_healed(amount):
 	current_vit += amount
@@ -601,63 +573,6 @@ func _on_get_healed(amount):
 	status_sprite.play("recover")
 	emit_signal("set_health_bar", current_vit)
 
-func init_knockback(amount, force, sender):
-	if not grabbed:
-		velocity = Vector2(0, 0)
-		can_move = false
-		knockbacked = true
-		
-		knockback_target_point = self.global_position + (sender.direction_to(self.global_position) * amount)
-		knockback_force = force
-		
-		sprite.play("damaged")
-		
-		self.add_child(knockback_controller_node.instantiate(), true)
-		var knockback_controller = get_child(-1)
-		knockback_controller.reparent(get_parent())
-		knockback_controller.target_point = knockback_target_point
-		knockback_controller.vel_multiplyer = force
-		knockback_controller.caller = self
-		knockback_controller.target_reached.connect(self._on_knockback_reset)
-
-func apply_knockback(delta):
-	velocity = Vector2(0, 0)
-	self.global_position = self.global_position.lerp(knockback_target_point, knockback_force * delta)
-	move_and_slide()
-
 func _on_knockback_reset():
-	knockbacked = false
+	super._on_knockback_reset()
 	combo_time.start()
-
-func _on_change_stats(stat, amount, time_duration, _ally_sender):
-		if "str" in stat:
-			current_str += amount
-		elif "tem" in stat:
-			current_tem += amount
-		elif "des" in stat:
-			current_des += amount
-		elif "pbc" in stat:
-			current_pbc += amount
-		elif "efc" in stat:
-			current_efc += amount
-		
-		if time_duration != 0:
-			if amount > 0:
-				status_sprite.play("buff")
-			else:
-				status_sprite.play("debuff")
-			add_child(load("res://scenes/time_of_change.tscn").instantiate(),true)
-			var new_timer = get_child(get_child_count()-1)
-			new_timer.stat = stat
-			new_timer.amount = -amount
-			new_timer.wait_time = time_duration
-			new_timer.reset_stats.connect(self._on_change_stats)
-			new_timer.start()
-
-func _on_status_alert_sprite_animation_finished():
-	status_sprite.play("idle")
-
-func dramatic_slow_motion():
-	Engine.time_scale = 0.3
-	await get_tree().create_timer(0.5, true, false, true).timeout
-	Engine.time_scale = 1.0

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Stats" load_steps=2 format=3 uid="uid://802rrqqp7wbe"]
+
+[ext_resource type="Script" uid="uid://ifry1qfc83kx" path="res://components/scripts/Stats.gd" id="1_p56yb"]
+
+[resource]
+script = ExtResource("1_p56yb")
+vit = 60
+str = 60
+tem = 80
+des = 200
+pbc = 45
+efc = 1.5
+metadata/_custom_type_script = "uid://ifry1qfc83kx"

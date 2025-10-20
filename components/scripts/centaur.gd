@@ -1,29 +1,8 @@
-extends CharacterBody2D
+class_name Centaur extends Enemy
 
-@export var default_vit : int = 200
-var current_vit = default_vit
-@export var default_str : int = 175
-var current_str = default_str
-@export var default_tem : int = 120
-var current_tem = default_tem
-@export var default_des : int = 300
-var current_des = default_des
-@export var default_pbc : int = 20
-var current_pbc = default_pbc
-@export var default_efc : float = 1.3
-var current_efc = default_efc
-
-@export var knockback_controller_node : PackedScene
 var scene_manager : Node2D
 
-var is_in_atk_range = false
-var moving = true
-var grabbed = false
 var grab_position
-
-var knockbacked = false
-var knockback_target_point
-var knockback_force
 
 signal take_dmg(str, atk_str, sec_stun, pbc, efc, type, sender)
 signal got_grabbed(is_grabbed)
@@ -33,7 +12,6 @@ signal inflict_knockback(amount, force, sender)
 signal shake_camera(shake, strenght)
 
 var target_position
-var player
 
 enum Possible_Attacks {IDLE, HALBERD, SPRINT, TEMPERANCE}
 var choosed_atk
@@ -63,7 +41,6 @@ var first_enter = true
 
 @onready var sprite = $Sprite2D
 
-@onready var stun_timer = $Stun
 @onready var safe_timer = $Safe_timer
 
 @onready var body_collider = $Body_collider
@@ -79,15 +56,10 @@ var first_enter = true
 
 @onready var healthbar = $Control/HealthBar
 
-@onready var hitmarker_spawnpoint = $Hitmarker_spawn
-
-@onready var status_sprite = $Status_alert_sprite
-
 @onready var update_atk_timer = $Update_Atk
 
 @onready var grab_position_marker = $Grab_position
 @onready var animation_player = $AnimationPlayer
-@onready var hit_flash_player = $Hit_flash_player
 
 @onready var halberd_cooldown = $Halberd_cooldown
 @onready var sprint_cooldown = $Sprint_cooldown
@@ -95,24 +67,27 @@ var first_enter = true
 
 var player_in_atk_range = false
 
-'METODO CHE PARTE QUANDO VIENE ISTANZIATO IL NODO
-	setta la vita attuale a quella massima
-	imposta il valore massimo della barra della salute al massimo
-	setta la barra della salute'
+#METODO CHE PARTE QUANDO VIENE ISTANZIATO IL NODO
+	#setta la vita attuale a quella massima
+	#imposta il valore massimo della barra della salute al massimo
+	#setta la barra della salute
 
 func _ready():
+	var stats : Resource = load("res://components/resources/stats/centaur_stats.tres")
+	load_stats(stats)
+	
 	healthbar.max_value = default_vit
 	set_health_bar()
 	sprite.play("idle")
 	set_idle()
 
-'METODO CHE VIENE PROCESSATO PER FRAME
-	controlla se il player è entrato in area e si può muovere
-		allora si muove
-	altrimenti se il player NON è entrato in area e si può muovere
-		allora comincia a vagare
-	controlla se è grabbato
-		allora fa partire il metodo grab()'
+#METODO CHE VIENE PROCESSATO PER FRAME
+	#controlla se il player è entrato in area e si può muovere
+		#allora si muove
+	#altrimenti se il player NON è entrato in area e si può muovere
+		#allora comincia a vagare
+	#controlla se è grabbato
+		#allora fa partire il metodo grab()
 
 func _physics_process(delta):
 	if not is_performing_grab and (animation_player.current_animation == "marker_movement" or animation_player.current_animation == "marker_movement_flip"):
@@ -138,11 +113,11 @@ func _physics_process(delta):
 	elif grabbed:
 		is_grabbed()
 
-'METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
-	salvo la posizione attuale del player
-	creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
-	se il nodo è distante dal player di almeno 12 unità
-		muovo il nodo verso il player con la velocità di 3'
+#METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
+	#salvo la posizione attuale del player
+	#creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
+	#se il nodo è distante dal player di almeno 12 unità
+		#muovo il nodo verso il player con la velocità di 3
 
 func flip(distance_to_player):
 	if distance_to_player.x < 0:
@@ -202,23 +177,6 @@ func choose_atk():
 		choosed_atk = Possible_Attacks.TEMPERANCE
 	
 	#choosed_atk = Possible_Attacks.SPRINT
-
-'DIGEST DEL SEGNALE DEL PLAYER \"is_in_atk_range\"
-{
-	PARAMETRI
-	boolean is_in: identifica se il nodo è entrato oppure è uscito
-	Node body: identifica il nodo che è entrato o uscito
-}
-	se il segnale che manda al nodo è di entrata nell\'area e il nodo è questo
-		allora il nodo è dentro l\'area del player
-	altrimenti
-		non è in range'
-
-func _on_player_is_in_atk_range(is_in, body):
-	if is_in and body == self and not is_in_atk_range:
-		is_in_atk_range = true
-	else:
-		is_in_atk_range = false
 	
 #DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
 #{
@@ -238,11 +196,11 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 	if is_in_atk_range and !grabbed:
 		var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 		var dmg = dmg_info[0]
-		scene_manager.show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
+		show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
 		current_vit -= dmg
 		set_health_bar()
 		if dmg > 0:
-			scene_manager.emit_hit_particles(sender, self)
+			emit_hit_particles(sender)
 			hit_flash_player.stop()
 			hit_flash_player.play("hit_flash")
 			emit_signal("shake_camera", true, dmg_info[2])
@@ -446,61 +404,7 @@ func _on_update_atk_timeout():
 func _on_navigation_agent_2d_velocity_computed(safe_velocity):
 	velocity = safe_velocity
 
-func init_knockback(amount, force, sender):
-	if is_in_atk_range and not grabbed:
-		velocity = Vector2(0, 0)
-		moving = false
-		safe_timer.start()
-		sprinting = false
-		knockbacked = true
-		
-		knockback_target_point = self.global_position + (sender.direction_to(self.global_position) * amount)
-		knockback_force = force
-		
-		self.add_child(knockback_controller_node.instantiate(), true)
-		var knockback_controller = get_child(-1)
-		knockback_controller.reparent(get_parent())
-		knockback_controller.target_point = knockback_target_point
-		knockback_controller.vel_multiplyer = force
-		knockback_controller.caller = self
-		knockback_controller.target_reached.connect(self._on_knockback_reset)
-
-func apply_knockback(delta):
-	velocity = Vector2(0, 0)
-	self.global_position = self.global_position.lerp(knockback_target_point, knockback_force * delta)
-	move_and_slide()
-
 func _on_knockback_reset():
-	knockbacked = false
+	super._on_knockback_reset()
 	if stun_timer.is_stopped():
 		set_idle()
-
-func _on_change_stats(stat, amount, time_duration, ally_sender):
-	if (is_in_atk_range and !grabbed) or time_duration == 0 or ally_sender:
-		if "str" in stat:
-			current_str += amount
-		elif "tem" in stat:
-			current_tem += amount
-		elif "des" in stat:
-			current_des += amount
-		elif "pbc" in stat:
-			current_pbc += amount
-		elif "efc" in stat:
-			current_efc += amount
-		
-		
-		if time_duration != 0:
-			if amount > 0:
-				status_sprite.play("buff")
-			else:
-				status_sprite.play("debuff")
-			add_child(load("res://scenes/miscellaneous/time_of_change.tscn").instantiate(),true)
-			var new_timer = get_child(get_child_count()-1)
-			new_timer.stat = stat
-			new_timer.amount = -amount
-			new_timer.wait_time = time_duration
-			new_timer.reset_stats.connect(self._on_change_stats)
-			new_timer.start()
-
-func _on_status_alert_sprite_animation_finished():
-	status_sprite.play("idle")

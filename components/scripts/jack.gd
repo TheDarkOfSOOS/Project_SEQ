@@ -1,21 +1,5 @@
-extends CharacterBody2D
+class_name Jack extends Player
 
-var char_name = "Jack"
-
-@export var default_vit : int = 140
-var current_vit : int = default_vit
-@export var default_str : int = 120
-var current_str : int = default_str
-@export var default_tem : int = 80
-var current_tem : int = default_tem
-@export var default_des : int = 150
-var current_des : int = default_des
-@export var default_pbc : int = 30
-var current_pbc : int = default_pbc
-@export var default_efc : float = 1.5
-var current_efc : float = default_efc
-
-@export var knockback_controller_node : PackedScene
 @export var change_stats_timer_node : PackedScene
 
 var scene_manager : Node2D
@@ -25,7 +9,6 @@ enum Atk_States {IDLE, BASE_ATK, SK1, SK2, EVA, ULT}
 
 signal is_in_atk_range(is_in, body)
 signal take_dmg(str, atk_str, sec_stun, pbc, efc, sender)
-signal set_idle()
 signal set_health_bar(current_vit)
 signal get_healed(amount)
 signal change_stats(stat, amount, time_duration, ally_sender)
@@ -43,13 +26,8 @@ var atk_state = Atk_States.IDLE
 
 var can_move = true
 var can_interact_with_something = false
-var grabbed = false
 var grab_marker
 var grab_sender
-
-var knockbacked = false
-var knockback_target_point
-var knockback_force
 
 var atk_anim_finished = true
 
@@ -98,17 +76,11 @@ var SHOTGUN_ROUNDS_COUNT = 6
 @onready var flashbang_area = $Flashbang_area
 @onready var flashbang_collider = $Flashbang_area/Collider
 
-@onready var stun_timer = $Stun
 @onready var shooting_delay_timer = $Shooting_delay_time
 @onready var reaction_timer = $Reaction_time
 @onready var ulti_duration_timer = $Ulti_duration
 
-@onready var status_sprite = $Status_alert_sprite
-@onready var hit_flash_player = $Hit_flash_player
-
 @onready var animation_player = $Control/AnimationPlayer
-
-@onready var hitmarker_spawnpoint = $Hitmarker_spawn
 
 @onready var powerup_handler
 
@@ -125,6 +97,10 @@ var SHOTGUN_ROUNDS_COUNT = 6
 		esegue il metodo di movimento della skill1'
 
 func _ready():
+	var stats : Stats = load("res://components/resources/stats/jack_stats.tres")
+	load_stats(stats)
+	char_name = "Jack"
+	
 	emit_signal("set_health_bar", default_vit)
 	skill2_cooldown.wait_time = SKILL2_WAIT_TIME
 	skill1_cooldown.wait_time = SKILL1_WAIT_TIME
@@ -316,11 +292,11 @@ func _on_sprite_2d_animation_finished():
 	if "reload" in sprite.animation:
 		gun_bullet_count = max_bullet_count
 		set_bullet_count_label()
-		emit_signal("set_idle")
+		set_idle()
 	
 	if "flashbang" in sprite.animation:
 		flashbang_collider.set_deferred("disabled", true)
-		emit_signal("set_idle")
+		set_idle()
 	
 	if "change" in sprite.animation and changing_gun:
 		can_move = false
@@ -331,7 +307,7 @@ func _on_sprite_2d_animation_finished():
 			sprite.play(gun_prefix+"change", 3.0)
 	
 	elif "change" in sprite.animation:
-		emit_signal("set_idle")
+		set_idle()
 	
 	if "shooting" in sprite.animation:
 		shooting_delay_timer.start()
@@ -436,7 +412,7 @@ func set_bullet_count_label():
 	remaining_bullets_label.text = "x" + str(gun_bullet_count)
 
 #  -- set_idle mi permette di resettare il player allo stato di idle --  #
-func _on_set_idle():
+func set_idle():
 	if not knockbacked:
 		self.rotation_degrees = 0
 		
@@ -474,28 +450,26 @@ func _on_shooting_delay_time_timeout():
 	reaction_timer.start()
 
 func _on_reaction_time_timeout() -> void:
-	emit_signal("set_idle")
+	set_idle()
 
 func _on_ulti_duration_timeout() -> void:
 	pass # Replace with function body.
-
-
 
 ' -- DIGEST SEGNALI NEMICI -- '
 func _on_enemy_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, sender):
 	var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 	var dmg = dmg_info[0]
-	scene_manager.show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
+	show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
 	current_vit -= dmg
 	emit_signal("set_health_bar", current_vit)
 	if dmg > 0:
-		scene_manager.emit_hit_particles(sender, self)
+		emit_hit_particles(sender)
 		hit_flash_player.stop()
 		hit_flash_player.play("hit_flash")
 		emit_signal("shake_camera", true, dmg_info[2])
 	if stun_sec > 0 and not "flashbang" in sprite.animation:
 		shooting_delay_timer.stop()
-		emit_signal("set_idle")
+		set_idle()
 		sprite.play(gun_prefix+"damaged")
 		can_move = false
 		stun_timer.wait_time = stun_sec
@@ -503,7 +477,7 @@ func _on_enemy_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, se
 
 func _on_enemy_grab(is_been_grabbed, grab_position_marker, sender):
 	if is_been_grabbed and not grabbed:
-		emit_signal("set_idle")
+		set_idle()
 		sprite.play(gun_prefix+"damaged")
 		
 		can_move = false
@@ -530,7 +504,7 @@ func _on_enemy_grab(is_been_grabbed, grab_position_marker, sender):
 			sprite.flip_v = false
 		
 	elif not is_been_grabbed:
-		emit_signal("set_idle")
+		set_idle()
 		grabbed = false
 
 #METODO CHE TELETRASPORTA IL NODO NELLA POSIZIONE DEL PLAYER DURANTE LA GRAB
@@ -541,7 +515,7 @@ func is_grabbed():
 	position = grab_marker.global_position
 
 func _on_stun_timeout():
-	emit_signal("set_idle")
+	set_idle()
 
 func _on_get_healed(amount):
 	current_vit += amount
@@ -550,58 +524,7 @@ func _on_get_healed(amount):
 	status_sprite.play("recover")
 	emit_signal("set_health_bar", current_vit)
 
-func init_knockback(amount, force, sender):
-	if not grabbed:
-		velocity = Vector2(0, 0)
-		can_move = false
-		knockbacked = true
-		
-		knockback_target_point = self.global_position + (sender.direction_to(self.global_position) * amount)
-		knockback_force = force
-		
-		sprite.play(gun_prefix+"damaged")
-		
-		self.add_child(knockback_controller_node.instantiate(), true)
-		var knockback_controller = get_child(-1)
-		knockback_controller.reparent(get_parent())
-		knockback_controller.target_point = knockback_target_point
-		knockback_controller.vel_multiplyer = force
-		knockback_controller.caller = self
-		knockback_controller.target_reached.connect(self._on_knockback_reset)
-
-func apply_knockback(delta):
-	velocity = Vector2(0, 0)
-	self.global_position = self.global_position.lerp(knockback_target_point, knockback_force * delta)
-	move_and_slide()
-
+# override
 func _on_knockback_reset():
-	knockbacked = false
+	super._on_knockback_reset()
 	reaction_timer.start()
-
-func _on_change_stats(stat, amount, time_duration, _ally_sender):
-		if "str" in stat:
-			current_str += amount
-		elif "tem" in stat:
-			current_tem += amount
-		elif "des" in stat:
-			current_des += amount
-		elif "pbc" in stat:
-			current_pbc += amount
-		elif "efc" in stat:
-			current_efc += amount
-		
-		if time_duration != 0:
-			if amount > 0:
-				status_sprite.play("buff")
-			else:
-				status_sprite.play("debuff")
-			add_child(change_stats_timer_node.instantiate(),true)
-			var new_timer = get_child(get_child_count()-1)
-			new_timer.stat = stat
-			new_timer.amount = -amount
-			new_timer.wait_time = time_duration
-			new_timer.reset_stats.connect(self._on_change_stats)
-			new_timer.start()
-
-func _on_status_alert_sprite_animation_finished():
-	status_sprite.play("idle")
