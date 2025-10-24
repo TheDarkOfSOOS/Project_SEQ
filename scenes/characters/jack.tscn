@@ -1,4 +1,4 @@
-[gd_scene load_steps=185 format=3 uid="uid://b3nwx0erq4kqx"]
+[gd_scene load_steps=184 format=3 uid="uid://b3nwx0erq4kqx"]
 
 [ext_resource type="Script" uid="uid://bkmqji7j35m0b" path="res://components/scripts/jack.gd" id="1_4tu1l"]
 [ext_resource type="Texture2D" uid="uid://o1s5vs53dc4a" path="res://components/sprites/jack/pistol/jack_damaged_p.png" id="3_84yut"]
@@ -8,7 +8,6 @@
 [ext_resource type="FontFile" uid="uid://ct7fhrwy7parr" path="res://components/fonts/basis33.ttf" id="4_q3k4l"]
 [ext_resource type="Texture2D" uid="uid://ctcf43dptrdq1" path="res://components/sprites/jack/pistol/jack_idle.png" id="4_xllxl"]
 [ext_resource type="Texture2D" uid="uid://n5eeephddexo" path="res://components/sprites/jack/pistol/jack_shooting_p.png" id="5_ltcqf"]
-[ext_resource type="PackedScene" uid="uid://b8m3imv5eplab" path="res://scenes/miscellaneous/knockback_controller.tscn" id="5_m4st2"]
 [ext_resource type="Texture2D" uid="uid://btjg1uvmks8gk" path="res://components/sprites/jack/pistol/jack_running_p.png" id="5_pnxoj"]
 [ext_resource type="Texture2D" uid="uid://iiwhblervbq4" path="res://components/sprites/jack/pistol/jack_change_p.png" id="6_ovxgh"]
 [ext_resource type="Texture2D" uid="uid://b5n73bxvsflih" path="res://components/sprites/jack/assault/jack_change_as.png" id="6_p2m4j"]
@@ -1274,7 +1273,6 @@ collision_mask = 4
 collision_priority = 99999.0
 motion_mode = 1
 script = ExtResource("1_4tu1l")
-knockback_controller_node = ExtResource("5_m4st2")
 change_stats_timer_node = ExtResource("4_bxdqx")
 bullet_scene = ExtResource("3_wfqrd")
 
@@ -1399,7 +1397,6 @@ one_shot = true
 [node name="Ulti_cooldown" type="Timer" parent="."]
 wait_time = 90.0
 one_shot = true
-autostart = true
 
 [node name="Shooting_delay_time" type="Timer" parent="."]
 wait_time = 0.4
@@ -1418,7 +1415,6 @@ libraries = {
 }
 
 [connection signal="get_healed" from="." to="." method="_on_get_healed"]
-[connection signal="set_idle" from="." to="." method="_on_set_idle"]
 [connection signal="animation_finished" from="Sprite2D" to="." method="_on_sprite_2d_animation_finished"]
 [connection signal="frame_changed" from="Sprite2D" to="." method="_on_sprite_2d_frame_changed"]
 [connection signal="animation_finished" from="Status_alert_sprite" to="." method="_on_status_alert_sprite_animation_finished"]

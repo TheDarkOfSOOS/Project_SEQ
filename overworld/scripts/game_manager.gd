@@ -3,6 +3,16 @@ extends Node
 # get_tree().get_first_node_in_group("gm")
 
 enum Attack_Types {PHYSICAL, PROJECTILE}
+const Status_Icons = {
+	"weakness" : "res://components/icons/weakness_icon.png",
+	"strenght" : "res://components/icons/strenght_icon.png",
+	"fragility" : "res://components/icons/fragility_icon.png",
+	"vigor" : "res://components/icons/vigor_icon.png",
+	"slowdown" : "res://components/icons/slowdown_icon.png",
+	"swiftness" : "res://components/icons/swiftness_icon.png",
+	"luck" : "res://components/icons/luck_icon.png",
+	"unluck" : "res://components/icons/unluck_icon.png"
+}
 
 @onready var root : Window = get_node("/root/")
 
@@ -35,6 +45,7 @@ func _process(_delta):
 	
 
 func load_dungeon():
+	Engine.time_scale = 1.0
 	Menu.game_status = Menu.GAME_STATUSES.dungeon
 	get_child(0).ost_player.stop()
 	var selected_character # attributo da passare
@@ -45,6 +56,7 @@ func load_dungeon():
 	get_child(0).queue_free()
 
 func load_map():
+	Engine.time_scale = 1.0
 	Menu.game_status = Menu.GAME_STATUSES.overworld
 	get_child(0).ost_player.stop()
 	var selected_character # attributo da passare

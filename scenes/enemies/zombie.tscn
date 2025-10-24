@@ -541,7 +541,7 @@ safe_margin = 1.0
 script = ExtResource("1_4dl1i")
 
 [node name="Hitmarker_spawn" type="Marker2D" parent="."]
-position = Vector2(0, -64)
+position = Vector2(0, -45)
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 y_sort_enabled = true
@@ -567,17 +567,35 @@ rotation = 0.191986
 shape = SubResource("CapsuleShape2D_7foa3")
 debug_color = Color(1, 1, 0, 0.0666667)
 
-[node name="HealthBar" type="ProgressBar" parent="."]
-light_mask = 0
-anchors_preset = -1
-anchor_left = 0.025
-anchor_top = 0.325
-anchor_right = 0.025
-anchor_bottom = 0.325
+[node name="UI_container" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(98, 10)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
 offset_left = -49.0
-offset_top = -47.0
+offset_top = -70.605
 offset_right = 49.0
-offset_bottom = -37.0
+offset_bottom = -39.605
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.0
+theme_override_constants/separation = 26
+alignment = 1
+
+[node name="Status_container" type="HBoxContainer" parent="UI_container"]
+layout_mode = 2
+alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="UI_container"]
+light_mask = 0
+custom_minimum_size = Vector2(98, 10)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.0
 theme_override_styles/background = SubResource("StyleBoxFlat_00dig")
 theme_override_styles/fill = SubResource("StyleBoxFlat_0rxx2")
 max_value = 150.0
@@ -652,6 +670,7 @@ libraries = {
 }
 
 [node name="Area2D" type="Area2D" parent="."]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource("CircleShape2D_i1x1v")

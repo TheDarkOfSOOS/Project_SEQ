@@ -53,7 +53,8 @@ var changing_gun = false
 var EVADE_WAIT_TIME = 5.0
 var SKILL2_WAIT_TIME = 35.0
 var SKILL1_WAIT_TIME = 26.0
-var ULTI_WAIT_TIME = 90.0
+#var ULTI_WAIT_TIME = 90.0
+var ULTI_WAIT_TIME = 9.0
 var ULTI_DURATION = 20.0
 
 var SHOTGUN_ROUNDS_COUNT = 6
@@ -81,8 +82,6 @@ var SHOTGUN_ROUNDS_COUNT = 6
 @onready var ulti_duration_timer = $Ulti_duration
 
 @onready var animation_player = $Control/AnimationPlayer
-
-@onready var powerup_handler
 
 @warning_ignore("unused_parameter")
 @warning_ignore("unused_signal")
@@ -184,6 +183,7 @@ func switch_between_reload_animation(running):
 	o si sta spostando) oppure il numero di combo che sta facendo ed infine se non è in cooldown'
 
 func atk_handler():
+	#TODO CHE CAZZO????
 	if Input.is_action_pressed("base_atk") and not Input.is_action_just_pressed("base_atk") and (sprite.animation == gun_prefix+"idle" or sprite.animation == gun_prefix+"running") and gun_bullet_count <= 0:
 		if gun_prefix == "p_":
 			animation_player.play("shake_ammo")
@@ -251,8 +251,7 @@ func atk_handler():
 		skill1_cooldown.start(0.1)
 		skill2_cooldown.start(0.1)
 		atk_state = Atk_States.ULT
-		_on_change_stats("pbc", 100, ULTI_DURATION, false)
-		_on_change_stats("str", 100, ULTI_DURATION, false)
+		_on_change_stats("luck", 1000, ULTI_DURATION, false)
 
 	elif sprite.animation != gun_prefix+"idle" or sprite.animation != gun_prefix+"running":
 		pass

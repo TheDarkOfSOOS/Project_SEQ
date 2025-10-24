@@ -44,8 +44,6 @@ var sprinting = false
 @onready var sprint_charge_time = $Charge_Time
 @onready var sprint_time = $Sprint_time
 
-@onready var healthbar = $HealthBar
-
 @onready var update_atk_timer = $Update_Atk
 
 @onready var bite_cooldown = $Bite_Cooldown
@@ -238,24 +236,6 @@ func _on_stun_timeout():
 	choosed_atk = Possible_Attacks.IDLE
 	sprint_collider.set_deferred("disabled", true)
 	set_idle()
-
-#DIGEST DEL SEGNALE PROPRIO "set_health_bar", AGGIORNA LA BARRA DELLA SALUTE
-	#il valore della barra diventa uguale a quello della vita attuale
-	#se il valore della vita è minore o uguale a 0
-		#cancello il nodo dalla scena
-
-func set_health_bar():
-	if current_vit <= 0:
-		if player.char_name == "Nathan" and grabbed:
-			emit_signal("got_grabbed", false)
-		if player.char_name == "Tyrone" and player.sprite.animation == "base atk5":
-			QuestManager.quests["combo"].reach_goal_quest()
-			QuestManager.quests["combo"].complete_quest()
-		queue_free()
-	elif current_vit > default_vit:
-		current_vit = default_vit
-	
-	healthbar.value = current_vit
 
 # -------- SIGNAL DIGEST -------- #
 

@@ -74,7 +74,7 @@ func _ready():
 	var stats : Resource = load("res://components/resources/stats/lich_stats.tres")
 	load_stats(stats)
 	
-	emit_signal("set_health_bar", default_vit)
+	emit_signal("set_health_bar_to_gui", default_vit)
 	sprite.play("spawn")
 	
 	ground_tilemap_layer = get_parent().get_parent().find_child("Ground",true,false)
@@ -161,7 +161,7 @@ func choose_atk():
 	else:
 		choosed_atk = Possible_Attacks.WITCHCRAFT # 25%
 	
-	choosed_atk = Possible_Attacks.EVOCATION
+	#choosed_atk = Possible_Attacks.EVOCATION
 
 # -------- SIGNAL DIGEST -------- #
 
@@ -185,7 +185,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 		if is_in_atk_range and !grabbed:
 			var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 			current_vit -= dmg_info[0]
-			emit_signal("set_health_bar", current_vit)
+			emit_signal("set_health_bar_to_gui", current_vit)
 			show_hitmarker("-" + str(dmg_info[0]), dmg_info[1], hitmarker_spawnpoint)
 			
 			# sto stronzo ha uno stun_reduction, cioè diminuisce i secondi di stun

@@ -903,7 +903,6 @@ death_sphere_scene = ExtResource("4_cepbk")
 explosion_scene = ExtResource("5_jup8x")
 
 [node name="Hitmarker_spawn" type="Marker2D" parent="."]
-visible = false
 position = Vector2(0, -64)
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
@@ -912,7 +911,7 @@ y_sort_enabled = true
 material = SubResource("ShaderMaterial_41dip")
 scale = Vector2(0.3, 0.3)
 sprite_frames = SubResource("SpriteFrames_7kgit")
-animation = &"spawn"
+animation = &"idle"
 autoplay = "spawn"
 
 [node name="Status_alert_sprite" type="AnimatedSprite2D" parent="."]
@@ -923,6 +922,29 @@ scale = Vector2(0.0539966, 0.0539966)
 sprite_frames = SubResource("SpriteFrames_nt50q")
 animation = &"idle"
 autoplay = "idle"
+
+[node name="UI_container" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(98, 10)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -49.0
+offset_top = -183.605
+offset_right = 49.0
+offset_bottom = -152.605
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.0
+theme_override_constants/separation = 21
+alignment = 1
+
+[node name="Status_container" type="HBoxContainer" parent="UI_container"]
+layout_mode = 2
+alignment = 1
 
 [node name="Body_collider" type="CollisionShape2D" parent="."]
 z_index = 2
@@ -949,8 +971,10 @@ visible = false
 position = Vector2(0, -220)
 
 [node name="Explosions_container" type="Node2D" parent="."]
+visible = false
 
 [node name="First_round" type="Node2D" parent="Explosions_container"]
+visible = false
 
 [node name="Explosion" type="Marker2D" parent="Explosions_container/First_round"]
 position = Vector2(190, 0)
@@ -965,6 +989,7 @@ position = Vector2(-190, 0)
 position = Vector2(0, -190)
 
 [node name="Second_round" type="Node2D" parent="Explosions_container"]
+visible = false
 
 [node name="Explosion" type="Marker2D" parent="Explosions_container/Second_round"]
 position = Vector2(380, 0)
@@ -991,6 +1016,7 @@ position = Vector2(253, -253)
 position = Vector2(-253, -253)
 
 [node name="Third_round" type="Node2D" parent="Explosions_container"]
+visible = false
 
 [node name="Explosion" type="Marker2D" parent="Explosions_container/Third_round"]
 position = Vector2(570, 0)

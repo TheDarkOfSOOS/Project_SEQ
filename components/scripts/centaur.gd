@@ -33,9 +33,9 @@ var first_enter = true
 @export var sprint_knockback_amount = 400
 @export var sprint_knockback_force = 9.2
 @onready var sprint_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
-@export var temperance_changed_stat = "tem"
+@export var temperance_changed_stat = "vigor"
 @export var temperance_amount = 60
-@export var temperance_duration = 20
+@export var temperance_duration = 50
 
 @onready var navigation_agent = $NavigationAgent2D
 
@@ -53,8 +53,6 @@ var first_enter = true
 @onready var sprint_collider = $Sprint_area/Collider
 @onready var sprint_duration_timer = $Sprint_area/Sprint_duration
 @onready var sprint_reset_collider = $Reset_sprint_area/Collision
-
-@onready var healthbar = $Control/HealthBar
 
 @onready var update_atk_timer = $Update_Atk
 
@@ -176,7 +174,7 @@ func choose_atk():
 	else:
 		choosed_atk = Possible_Attacks.TEMPERANCE
 	
-	#choosed_atk = Possible_Attacks.SPRINT
+	#choosed_atk = Possible_Attacks.TEMPERANCE
 	
 #DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
 #{
@@ -385,15 +383,6 @@ func set_idle():
 
 func _on_safe_timer_timeout() -> void:
 	set_idle()
-
-#DIGEST DEL SEGNALE PROPRIO "set_health_bar", AGGIORNA LA BARRA DELLA SALUTE
-#	il valore della barra diventa uguale a quello della vita attuale
-#	se il valore della vita è minore o uguale a 0
-#		cancello il nodo dalla scena
-func set_health_bar():
-	healthbar.value = current_vit
-	if current_vit <= 0:
-		queue_free()
 
 # //////////// AREA COMUNE TRA NODI //////////// #
 

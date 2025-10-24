@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://xaih122trlc"]
+
+[ext_resource type="Script" uid="uid://copq13qen8lu2" path="res://components/scripts/status_icon_script.gd" id="1_tq3qi"]
+[ext_resource type="Texture2D" uid="uid://duc4ahoxw0ogk" path="res://components/icons/strenght_icon.png" id="2_7mxbo"]
+
+[node name="Status_icon" type="NinePatchRect"]
+size_flags_horizontal = 3
+script = ExtResource("1_tq3qi")
+
+[node name="RadialBar" type="TextureProgressBar" parent="."]
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -10.0
+offset_right = 15.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+step = 0.001
+value = 100.0
+rounded = true
+fill_mode = 4
+nine_patch_stretch = true
+texture_progress = ExtResource("2_7mxbo")

@@ -35,8 +35,6 @@ var choosed_atk
 
 @onready var navigation_agent = $NavigationAgent2D
 
-@onready var healthbar = $HealthBar
-
 @onready var punch_cooldown = $Punch_Cooldown
 @onready var earthquake_cooldown = $Earthquake_Cooldown
 
@@ -228,20 +226,6 @@ func is_grabbed():
 func _on_stun_timeout():
 	choosed_atk = Possible_Attacks.IDLE
 	set_idle()
-
-#DIGEST DEL SEGNALE PROPRIO "set_health_bar", AGGIORNA LA BARRA DELLA SALUTE
-	#il valore della barra diventa uguale a quello della vita attuale
-	#se il valore della vita è minore o uguale a 0
-		#cancello il nodo dalla scena
-
-func set_health_bar():
-	healthbar.value = current_vit
-	if current_vit <= 0:
-		if player.char_name == "Nathan" and grabbed:
-			emit_signal("got_grabbed", false)
-		queue_free()
-	elif current_vit > default_vit:
-		current_vit = default_vit
 
 func _on_punch_area_body_entered(body):
 	if body == player:

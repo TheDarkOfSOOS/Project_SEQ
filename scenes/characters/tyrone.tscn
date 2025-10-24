@@ -1106,7 +1106,7 @@ position = Vector2(0, -53.3333)
 material = SubResource("ShaderMaterial_3ojpq")
 scale = Vector2(0.15, 0.15)
 sprite_frames = SubResource("SpriteFrames_dte57")
-animation = &"base atk5"
+animation = &"idle"
 autoplay = "idle"
 
 [node name="Status_alert_sprite" type="AnimatedSprite2D" parent="."]
@@ -1225,6 +1225,7 @@ one_shot = true
 [node name="Ulti_cooldown" type="Timer" parent="."]
 wait_time = 60.0
 one_shot = true
+autostart = true
 
 [node name="Combo_time" type="Timer" parent="."]
 wait_time = 0.4

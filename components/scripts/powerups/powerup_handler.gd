@@ -79,32 +79,30 @@ func activate_powerup(powerup : Resource, delete : bool = false) -> void:
 		
 		powerup.boost = abs(powerup.boost)
 	
-	elif powerup.p_name == "Vivian":
-		powerup.boost = increase_stat_by_percentage(player.default_vit, rarity_power(powerup))
+	elif powerup.p_name == "Alvin":
+		powerup.boost = rarity_power(powerup)
+	
+	elif powerup.p_name == "Abigail":
+		powerup.boost = rarity_power(powerup)
 
 func increase_stat_by_percentage(base : int, perc : int) -> int:
 	var a : int = perc * base / 100
-	#print("increase_stat_by_percentage base: "+str(base))
-	#print("increase_stat_by_percentage perc: "+str(perc))
-	#print("increase_stat_by_percentage return: "+str(a))
 	return a
 
 func rarity_power(resource : Resource) -> float:
 	var a : float = resource.base + (resource.step * resource.max_rarity)
-	#print("rarity_power return: "+ str(a))
 	return a
 
 func apply_powerup_boost(powerup_name : String, param : Array = [null]) -> Variant:
 	for i in active_powerups:
 		if powerup_name == i.p_name:
-			if i.p_name == "Vivian":
-				player._on_get_healed(i.boost)
-				return null
 			if i.p_name == "Alvin":
 				for j in param.size():
 					var tmp = param.pop_front()
-					tmp = increase_stat_by_percentage(tmp, rarity_power(i))
+					tmp = increase_stat_by_percentage(tmp, i.boost)
 					param.push_back(tmp)
 				return param
+			elif i.p_name == "Abigail":
+				return increase_stat_by_percentage(param.pop_front(), i.boost)
 			
 	return null

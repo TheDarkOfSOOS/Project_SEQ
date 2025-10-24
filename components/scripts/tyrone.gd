@@ -51,9 +51,9 @@ var ult_moving_mod
 
 @export var skill2_force = 23
 @export var skill2_stun_time = 1.4
-@export var skill2_changed_stat = "tem"
-@export var skill2_stat_amount = -30
-@export var skill2_duration = 10
+@export var skill2_inflicted_status = "fragility"
+@export var skill2_stat_amount = 30
+@export var skill2_duration = 15
 @export var skill2_knockback_amount = 300
 @export var skill2_knockback_force = 7.2
 @onready var skill2_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
@@ -91,16 +91,16 @@ var ult_moving_mod
 
 @onready var combo_time = $Combo_time
 
-@onready var powerup_handler
+var skill2_cooldown_duration = 2
 
-'METODO CHE VIENE CHIAMATO AD OGNI FRAME
-	se il player si può muovere
-		esegue il metodo per muoversi
-	esegue il metodo che gestisce gli attacchi
-	se sta eseguendo un\'evasione
-		esegue il metodo di evasione
-	se ha attivato la skill1
-		esegue il metodo di movimento della skill1'
+#METODO CHE VIENE CHIAMATO AD OGNI FRAME
+	#se il player si può muovere
+		#esegue il metodo per muoversi
+	#esegue il metodo che gestisce gli attacchi
+	#se sta eseguendo un\'evasione
+		#esegue il metodo di evasione
+	#se ha attivato la skill1
+		#esegue il metodo di movimento della skill1
 
 func _ready():
 	var stats : Stats = load("res://components/resources/stats/tyrone_stats.tres")
@@ -109,6 +109,9 @@ func _ready():
 	
 	BASIC_ATK_COLLIDER_POSITION_X = bs_atk_collider.position.x
 	SKILL1_COLLIDER_POSITION_X = skill1_collider.position.x
+	
+	skill2_cooldown.wait_time = skill2_cooldown_duration
+	
 	emit_signal("set_health_bar", default_vit)
 
 func _physics_process(delta):
@@ -125,12 +128,12 @@ func _physics_process(delta):
 	if is_moving_ult:
 		ult_moving()
 
-'METODO CHE GESTISCE IL MOVIMENTO DEL PLAYER
-	pulisce il vettore della velocità
-	# Last Win #
-	quando si gira il player a destra o sinistra si deve girare anche le aree, 
-	altrimenti ci sarebbe il personaggio flippato ma l\'area rimane dall\'altra
-	parte'
+#METODO CHE GESTISCE IL MOVIMENTO DEL PLAYER
+	#pulisce il vettore della velocità
+	## Last Win #
+	#quando si gira il player a destra o sinistra si deve girare anche le aree, 
+	#altrimenti ci sarebbe il personaggio flippato ma l\'area rimane dall\'altra
+	#parte
 
 func move(delta):
 	axis = get_input_axis()
@@ -225,7 +228,7 @@ func atk_handler():
 		is_evading = true
 	
 	elif Input.is_action_just_pressed("skill2") and (sprite.animation == "idle" or sprite.animation == "running") and skill2_cooldown.is_stopped() and not can_interact_with_something:
-		skill2_cooldown.start()
+		skill2_cooldown.start(skill2_cooldown_duration)
 		moving = false
 		atk_state = Atk_States.SK2
 		sprite.play("skill2")
@@ -247,9 +250,9 @@ func atk_handler():
 
 
 # ----------------- AREA2D INIZIO ----------------- #
-'DIGEST DELLE AREE2D PER GESTIRE QUANDO UN NEMICO ENTRA O ESCE DALL\'AREA
-	ogni metodo controlla sempre come prima cosa se il body è diverso da se stesso, altrimenti
-	manderebbe dei segnali inutili'
+#DIGEST DELLE AREE2D PER GESTIRE QUANDO UN NEMICO ENTRA O ESCE DALL\'AREA
+	#ogni metodo controlla sempre come prima cosa se il body è diverso da se stesso, altrimenti
+	#manderebbe dei segnali inutili
 
 func _on_basic_atk_area_body_entered(body):
 	if body != self:
@@ -280,7 +283,7 @@ func _on_skill_2_area_body_entered(body):
 	if body != self:
 		emit_signal("is_in_atk_range", true, body)
 		emit_signal("take_dmg", current_str, skill2_force, skill2_stun_time, current_pbc, current_efc, skill2_type, self)
-		emit_signal("change_stats", skill2_changed_stat, skill2_stat_amount, skill2_duration, false)
+		emit_signal("change_stats", skill2_inflicted_status, skill2_stat_amount, skill2_duration, false)
 		
 		var temp = [skill2_knockback_amount, skill2_knockback_force]
 		temp = powerup_handler.apply_powerup_boost("Alvin", temp)
@@ -462,7 +465,7 @@ func set_idle():
 func _on_ult_time_timeout():
 	set_idle()
 
-'  -- quando finisce l\'effetto della skill allora disattivo l\'area e setto ad idle --  '
+  #-- quando finisce l\'effetto della skill allora disattivo l\'area e setto ad idle --  
 func _on_effect_animation_finished():
 	if atk_state == Atk_States.SK1:
 		set_idle()
@@ -479,7 +482,7 @@ func _on_eva_time_timeout():
 func _on_combo_time_timeout():
 	set_idle()
 
-'METODO CHE GESTISCE L\'EVASIONE IN BASE ALLA DIREZIONE PREMUTA'
+#METODO CHE GESTISCE L\'EVASIONE IN BASE ALLA DIREZIONE PREMUTA
 func evade():
 	velocity = Vector2.ZERO
 	self.set_collision_layer_value(1, false)
@@ -510,7 +513,7 @@ func evade():
 		velocity.x += evade_amount
 	move_and_slide()
 
-' -- DIGEST SEGNALI NEMICI -- '
+# -- DIGEST SEGNALI NEMICI -- 
 func _on_enemy_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, sender):
 	var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 	var dmg = dmg_info[0]
@@ -565,13 +568,6 @@ func is_grabbed():
 
 func _on_stun_timeout():
 	set_idle()
-
-func _on_get_healed(amount):
-	current_vit += amount
-	if current_vit > default_vit:
-		current_vit = default_vit
-	status_sprite.play("recover")
-	emit_signal("set_health_bar", current_vit)
 
 func _on_knockback_reset():
 	super._on_knockback_reset()

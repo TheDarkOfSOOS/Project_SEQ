@@ -19,6 +19,7 @@ var active_enemy_container : Node2D
 @onready var gui : Control = canvas_layer.find_child("GUI")
 # contenitore della gui di game over
 @onready var game_over_container : MarginContainer = gui.find_child("GameOver_container")
+@onready var game_over_retry = $CanvasLayer/GUI/GameOver_container/PanelContainer/VBoxContainer/MarginContainer/HBoxContainer/Retry
 # contenitore della gui del combattimento
 @onready var round_gui : Control = canvas_layer.find_child("Round_GUI")
 # music player che contiene le ost
@@ -191,7 +192,7 @@ func connect_enemies_with_player(): #connette i segnali tra il player e i nemici
 			# se il nodo è un boss
 			if "Boss" in current_node.name:
 				# allora connetto il segnale della barra della vita alla gui
-				current_node.set_health_bar.connect(round_gui._on_boss_set_healthbar)
+				current_node.set_health_bar_to_gui.connect(round_gui._on_boss_set_healthbar)
 
 func connect_player_projectile(projectile):
 	for i in active_enemy_container.get_child_count(): #cicla per ogni figlio della scena
@@ -214,8 +215,6 @@ func calculate_dmg(strenght, atk_str, tem, pbc, efc, type, caller):
 		# aumento il danno in base all'efficienza del colpo critico (es. 15 * 1.5 = 15 + 7.5 = 22.5 = 23)
 		dmg = round(dmg * efc)
 		crit = true
-		if "Enemy" in caller.name:
-			powerup_handler.apply_powerup_boost("Vivian")
 	
 	# controllo il tipo di attacco
 	if type == Attack_Types.PHYSICAL:
@@ -232,7 +231,7 @@ func _on_player_death():
 	player_gui.visible = false # nascondo la gui del player
 	Menu.game_status = Menu.GAME_STATUSES.unopenable # Azione piu' forte di quel che si pensi, non usarlo a cuor leggero
 	# metto il focus sul pulsante riprova nell menu di game over
-	$CanvasLayer/GUI/GameOver_container/PanelContainer/VBoxContainer/MarginContainer/HBoxContainer/Retry.grab_focus()
+	game_over_retry.grab_focus()
 
 func activate_player_GUI():
 	# il pg scelto è Rufus allora insanzia la sua GUI

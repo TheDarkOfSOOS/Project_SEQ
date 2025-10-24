@@ -33,8 +33,6 @@ var choosed_atk
 
 @onready var navigation_agent = $NavigationAgent2D
 
-@onready var healthbar = $HealthBar
-
 @onready var update_atk_timer = $Update_Atk
 
 @onready var slash_cooldown = $Basic_atk_Cooldown
@@ -42,10 +40,10 @@ var choosed_atk
 
 var player_in_atk_range = false
 
-'METODO CHE PARTE QUANDO VIENE ISTANZIATO IL NODO
-	setta la vita attuale a quella massima
-	imposta il valore massimo della barra della salute al massimo
-	setta la barra della salute'
+#METODO CHE PARTE QUANDO VIENE ISTANZIATO IL NODO
+	#setta la vita attuale a quella massima
+	#imposta il valore massimo della barra della salute al massimo
+	#setta la barra della salute
 
 func _ready():
 	var stats : Stats = load("res://components/resources/stats/skeleton_stats.tres")
@@ -55,13 +53,13 @@ func _ready():
 	set_health_bar()
 	sprite.play("idle")
 
-'METODO CHE VIENE PROCESSATO PER FRAME
-	controlla se il player è entrato in area e si può muovere
-		allora si muove
-	altrimenti se il player NON è entrato in area e si può muovere
-		allora comincia a vagare
-	controlla se è grabbato
-		allora fa partire il metodo grab()'
+#METODO CHE VIENE PROCESSATO PER FRAME
+	#controlla se il player è entrato in area e si può muovere
+		#allora si muove
+	#altrimenti se il player NON è entrato in area e si può muovere
+		#allora comincia a vagare
+	#controlla se è grabbato
+		#allora fa partire il metodo grab()
 
 func _physics_process(delta):
 	if dying or soul_out:
@@ -83,11 +81,11 @@ func _physics_process(delta):
 	elif not is_instance_valid(player) and moving:
 		sprite.play("idle")
 
-'METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
-	salvo la posizione attuale del player
-	creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
-	se il nodo è distante dal player di almeno 12 unità
-		muovo il nodo verso il player con la velocità di 3'
+#METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
+	#salvo la posizione attuale del player
+	#creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
+	#se il nodo è distante dal player di almeno 12 unità
+		#muovo il nodo verso il player con la velocità di 3
 
 func flip(distance_to_player):
 	if distance_to_player.x < 0:
@@ -137,19 +135,19 @@ func choose_atk():
 
 # -------- SIGNAL DIGEST -------- #
 
-'DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
-{
-	PARAMETRI
-	int atk_state: DEPRECATO
-	int dmg: quantità del danno inflitto
-	float sec: tempo dello stun
-}
-	se il nodo è in range e non è grabbato
-		allora sottraggo alla vita il danno
-		setto la barra della vita con il nuovo valore
-		impedisco al nodo di muoversi mentre viene attaccato
-		imposto il tempo di stun con il parametro passato
-		faccio partire il timer dello stun'
+#DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
+#{
+	#PARAMETRI
+	#int atk_state: DEPRECATO
+	#int dmg: quantità del danno inflitto
+	#float sec: tempo dello stun
+#}
+	#se il nodo è in range e non è grabbato
+		#allora sottraggo alla vita il danno
+		#setto la barra della vita con il nuovo valore
+		#impedisco al nodo di muoversi mentre viene attaccato
+		#imposto il tempo di stun con il parametro passato
+		#faccio partire il timer dello stun
 
 func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, sender):
 	if is_in_atk_range and !grabbed and not parring:
@@ -212,22 +210,23 @@ func is_grabbed():
 	flip((player.position - position).normalized())
 	position = grab_position.global_position
 
-'DIGEST DEL TIMER "Stun"
-	setto il movimento a true'
+#DIGEST DEL TIMER "Stun"
+	#setto il movimento a true
 
 func _on_stun_timeout():
 	if not dying:
 		choosed_atk = Possible_Attacks.IDLE
 		set_idle()
 
-'DIGEST DEL SEGNALE PROPRIO "set_health_bar", AGGIORNA LA BARRA DELLA SALUTE
-	il valore della barra diventa uguale a quello della vita attuale
-	se il valore della vita è minore o uguale a 0
-		cancello il nodo dalla scena'
+#DIGEST DEL SEGNALE PROPRIO "set_health_bar", AGGIORNA LA BARRA DELLA SALUTE
+	#il valore della barra diventa uguale a quello della vita attuale
+	#se il valore della vita è minore o uguale a 0
+		#cancello il nodo dalla scena
 
+# OVERRIDE
 func set_health_bar():
 	if soul_out and current_vit <= 0:
-		queue_free()
+		notify_death()
 	elif current_vit <= 0 and not dying:
 			set_idle()
 			dying = true
@@ -240,7 +239,7 @@ func set_health_bar():
 
 # -------- SIGNAL DIGEST -------- #
 
-'DIGEST CHE PERMETTE DI FAR RIPARTIRE IL MOVIMENTO'
+#DIGEST CHE PERMETTE DI FAR RIPARTIRE IL MOVIMENTO
 
 func set_idle():
 	if not knockbacked and not grabbed and not (dying or soul_out):

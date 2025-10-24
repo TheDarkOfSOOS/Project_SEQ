@@ -18,25 +18,27 @@ var current_pbc : int = default_pbc
 var default_efc : float
 var current_efc : float = default_efc
 
-var moving = true
-var grabbed = false
+var moving : bool = true
+var grabbed : bool = false
 
 var knockback_controller_node : PackedScene = preload("res://scenes/miscellaneous/knockback_controller.tscn")
-var knockbacked = false
+var knockbacked : bool = false
 var knockback_target_point
 var knockback_force
 
-@onready var hit_flash_player = $Hit_flash_player
+@onready var hit_flash_player : AnimationPlayer = $Hit_flash_player
 
 @onready var hitmarker_spawnpoint = $Hitmarker_spawn
 
 const hitmarker_scene : PackedScene = preload("res://scenes/miscellaneous/hitmarker.tscn")
 const hit_particles_scene : PackedScene = preload("res://scenes/miscellaneous/hit_particles.tscn")
-@onready var status_sprite = $Status_alert_sprite
-@onready var stun_timer = $Stun
+const status_icon : PackedScene = preload("res://scenes/miscellaneous/status_icon.tscn")
+@onready var status_sprite : AnimatedSprite2D = $Status_alert_sprite
+@onready var stun_timer : Timer = $Stun
 
-func load_stats(stats : Resource):
+func load_stats(stats : Resource) -> void:
 	default_vit = stats.vit
+	#default_vit = 1000000000
 	default_str = stats.str
 	default_tem = stats.tem
 	default_des = stats.des
@@ -50,7 +52,7 @@ func load_stats(stats : Resource):
 	current_pbc = default_pbc
 	current_efc = default_efc
 
-func show_hitmarker(dmg, crit, hitmarker_spawnpoint):
+func show_hitmarker(string : String, crit : bool, hitmarker_spawnpoint : Marker2D) -> void:
 	# istanzio l'hitmarker 
 	var hitmarker = hitmarker_scene.instantiate()
 	# lo posiziono nello spawnpoint
@@ -64,25 +66,66 @@ func show_hitmarker(dmg, crit, hitmarker_spawnpoint):
 						0.75)
 	
 	# cambio la label nella scena (che sono sicuro sia il child 0) con il danno
-	hitmarker.get_child(0).text = dmg
+	hitmarker.get_child(0).text = string
 	# se il danno è un crit
 	if crit:
 		# cambio il colore della label in oro
 		hitmarker.get_child(0).set("theme_override_colors/font_color", Color.GOLDENROD)
 	# aggiungo l'hitmarker alla scena
+	if "+" in string:
+		hitmarker.get_child(0).set("theme_override_colors/font_color", Color.LIME_GREEN)
 	get_parent().add_child(hitmarker)
 
-func _on_change_stats(stat, amount, time_duration, ally_sender):
+func _on_change_stats(stat : String, amount : int, time_duration : float, ally_sender : bool) -> void:
+	if "strenght" in stat:
+		create_status_timer(stat, "str", amount, time_duration)
+	elif "weakness" in stat:
+		create_status_timer(stat, "str", -amount, time_duration)
+	elif "vigor" in stat:
+		create_status_timer(stat, "tem", amount, time_duration)
+	elif "fragility" in stat:
+		create_status_timer(stat, "tem", -amount, time_duration)
+	elif "swiftness" in stat:
+		create_status_timer(stat, "des", amount, time_duration)
+	elif "slowdown" in stat:
+		create_status_timer(stat, "des", -amount, time_duration)
+	elif "luck" in stat:
+		create_status_timer(stat, "pbc", amount, time_duration)
+	elif "unluck" in stat:
+		create_status_timer(stat, "pbc", -amount, time_duration)
+	elif "gigi" in stat:
+		create_status_timer(stat, "efc", amount, time_duration)
+	elif "igig" in stat:
+		create_status_timer(stat, "efc", -amount, time_duration)
+	
 	if "str" in stat:
-		current_str += calculate_percentage(current_str, amount)
+		current_str += amount
 	elif "tem" in stat:
-		current_tem += calculate_percentage(current_tem, amount)
+		current_tem += amount
 	elif "des" in stat:
-		current_des += calculate_percentage(current_des, amount)
+		current_des += amount
 	elif "pbc" in stat:
-		current_pbc += calculate_percentage(current_pbc, amount)
+		current_pbc += amount
 	elif "efc" in stat:
-		current_efc += calculate_percentage(current_efc, amount)
+		current_efc += amount
+
+func create_status_timer(status : String, stat : String, amount : int, time_duration : float) -> void:
+	var calculated_amount
+	if "str" in stat:
+		calculated_amount = calculate_percentage(default_str, amount)
+		current_str += calculated_amount
+	elif "tem" in stat:
+		calculated_amount = calculate_percentage(default_tem, amount)
+		current_tem += calculated_amount
+	elif "des" in stat:
+		calculated_amount = calculate_percentage(default_des, amount)
+		current_des += calculated_amount
+	elif "pbc" in stat:
+		calculated_amount = calculate_percentage(default_pbc, amount)
+		current_pbc += calculated_amount
+	elif "efc" in stat:
+		calculated_amount = calculate_percentage(default_efc, amount)
+		current_efc += calculated_amount
 	
 	if time_duration != 0:
 		if amount > 0:
@@ -90,15 +133,27 @@ func _on_change_stats(stat, amount, time_duration, ally_sender):
 		else:
 			status_sprite.play("debuff")
 		self.add_child(load("res://scenes/miscellaneous/time_of_change.tscn").instantiate(),true)
-		var new_timer = get_child(get_child_count()-1)
+		var new_timer = get_child(-1)
 		new_timer.stat = stat
-		new_timer.amount = -amount
+		new_timer.amount = -calculated_amount
 		new_timer.wait_time = time_duration
 		new_timer.reset_stats.connect(self._on_change_stats)
+		instantiate_status_icon(status, new_timer)
 		new_timer.start()
 
 func _on_status_alert_sprite_animation_finished():
 	status_sprite.play("idle")
+
+func instantiate_status_icon(status : String, timer : Timer) -> Variant:
+	self.add_child(status_icon.instantiate(), true)
+	var new_status_icon = get_child(-1)
+	var image = get_tree().get_first_node_in_group("gm").Status_Icons[status]
+	var texture = Image.load_from_file(image)
+
+	new_status_icon.radial.texture_progress = ImageTexture.create_from_image(texture)
+	
+	new_status_icon.timer = timer
+	return new_status_icon
 
 func emit_hit_particles(attacker):
 	# istanzio le particelle

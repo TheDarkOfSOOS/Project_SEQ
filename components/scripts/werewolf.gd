@@ -8,13 +8,13 @@ var agility_percentage = 20
 var agility_activated = false
 var agility_multiplyer = 25
 
-@export var claw_force = 3.2
+@export var claw_force = 8.1
 @export var claw_stun_time = 0.2
 @onready var claw_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
 
-@export var howl_amount = 40
-@export var howl_duration = 20
-@export var howl_changed_stat = "str"
+@export var howl_amount = 20
+@export var howl_duration = 30
+@export var howl_changed_stat = "strenght"
 
 var second_time_claw = true
 
@@ -38,8 +38,6 @@ var choosed_atk
 @onready var claws_collider = $Claws_area/Collider
 
 @onready var howl_effect_sprite = $Howl_effect
-
-@onready var healthbar = $Control/HealthBar
 
 @onready var update_atk_timer = $Update_Atk
 
@@ -150,8 +148,9 @@ func agility():
 	agility_activated = true
 	sprite.speed_scale = 1.5
 	howl_effect_sprite.speed_scale = 1.5
-	current_des += agility_multiplyer
-	status_sprite.play("buff")
+	_on_change_stats("swiftness", agility_multiplyer, agility_duration.wait_time, true)
+	#current_des += agility_multiplyer
+	#status_sprite.play("buff")
 	init_knockback(100, 0.8, player.global_position)
 	sprite.play("agility")
 	agility_cooldown.start()
@@ -184,10 +183,10 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 		
 		if not agility_activated:
 			if dmg > 0:
-				scene_manager.emit_hit_particles(sender, self)
+				emit_hit_particles(sender)
 				hit_flash_player.stop()
 				hit_flash_player.play("hit_flash")
-			scene_manager.show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
+			show_hitmarker("-" + str(dmg), dmg_info[1], hitmarker_spawnpoint)
 			current_vit -= dmg
 			set_health_bar()
 			if dmg > 0:
@@ -200,7 +199,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 				sprite.play("damaged")
 		else:
 			moving = false
-			scene_manager.show_hitmarker("Schivato", false, hitmarker_spawnpoint)
+			show_hitmarker("Schivato", false, hitmarker_spawnpoint)
 			sprite.play("agility")
 			howl_charge_time.stop()
 
@@ -252,17 +251,6 @@ func _on_stun_timeout():
 	choosed_atk = Possible_Attacks.IDLE
 	set_idle()
 
-#DIGEST DEL SEGNALE PROPRIO "set_health_bar", AGGIORNA LA BARRA DELLA SALUTE
-#	il valore della barra diventa uguale a quello della vita attuale
-#	se il valore della vita è minore o uguale a 0
-#		cancello il nodo dalla scena
-func set_health_bar():
-	healthbar.value = current_vit
-	if current_vit <= 0:
-		queue_free()
-	elif current_vit > default_vit:
-		current_vit = default_vit
-
 # -------- SIGNAL DIGEST -------- #
 
 # DIGEST CHE PERMETTE DI FAR RIPARTIRE IL MOVIMENTO
@@ -306,7 +294,7 @@ func _on_agility_duration_timeout() -> void:
 	agility_activated = false
 	sprite.speed_scale = 1
 	howl_effect_sprite.speed_scale = 1
-	current_des -= agility_multiplyer
+	#current_des -= agility_multiplyer
 
 # //////////// AREA COMUNE TRA NODI //////////// #
 

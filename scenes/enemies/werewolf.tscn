@@ -1,11 +1,10 @@
-[gd_scene load_steps=80 format=3 uid="uid://c1ncws1k51fhp"]
+[gd_scene load_steps=79 format=3 uid="uid://c1ncws1k51fhp"]
 
 [ext_resource type="Script" uid="uid://bhpitipl544nw" path="res://components/scripts/werewolf.gd" id="1_0js6q"]
 [ext_resource type="Shader" uid="uid://c3ywoxg7w2n4d" path="res://components/shaders/hit_shader.gdshader" id="1_6jmst"]
 [ext_resource type="Texture2D" uid="uid://delv83r1fqak3" path="res://components/sprites/enemies/werewolf/werewolf_agility.png" id="2_k7yej"]
 [ext_resource type="Texture2D" uid="uid://bkhbwy7odynup" path="res://components/sprites/enemies/werewolf/werewolf_idle.png" id="2_lqm2o"]
 [ext_resource type="Texture2D" uid="uid://do723hrl5pw0x" path="res://components/sprites/enemies/werewolf/werewolf_claws.png" id="3_esspi"]
-[ext_resource type="PackedScene" uid="uid://b8m3imv5eplab" path="res://scenes/miscellaneous/knockback_controller.tscn" id="3_n7lwf"]
 [ext_resource type="Texture2D" uid="uid://cn8lkexbr5nv" path="res://components/sprites/enemies/werewolf/werewolf_damaged.png" id="4_p6bt8"]
 [ext_resource type="Texture2D" uid="uid://cnujwag6x2aah" path="res://components/sprites/enemies/werewolf/werewolf_howl.png" id="5_8fvt3"]
 [ext_resource type="Texture2D" uid="uid://b2l4gs7kw1k20" path="res://components/sprites/enemies/werewolf/werewolf_running.png" id="7_0qf4r"]
@@ -585,7 +584,6 @@ collision_mask = 5
 motion_mode = 1
 wall_min_slide_angle = 0.0
 script = ExtResource("1_0js6q")
-knockback_controller_node = ExtResource("3_n7lwf")
 
 [node name="Hitmarker_spawn" type="Marker2D" parent="."]
 position = Vector2(0, -64)
@@ -617,19 +615,33 @@ position = Vector2(-4, 14)
 shape = SubResource("CapsuleShape2D_7foa3")
 debug_color = Color(1, 1, 0, 0.0666667)
 
-[node name="Control" type="Control" parent="."]
-z_index = 10
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="HealthBar" type="ProgressBar" parent="Control"]
-layout_mode = 0
+[node name="UI_container" type="VBoxContainer" parent="."]
+z_index = 3
+custom_minimum_size = Vector2(98, 10)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
 offset_left = -49.0
-offset_top = -50.0
+offset_top = -76.105
 offset_right = 49.0
-offset_bottom = -40.0
+offset_bottom = -40.105
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.0
+theme_override_constants/separation = 26
+alignment = 1
+
+[node name="Status_container" type="HBoxContainer" parent="UI_container"]
+layout_mode = 2
+alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="UI_container"]
+custom_minimum_size = Vector2(98, 10)
+layout_mode = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_00dig")
 theme_override_styles/fill = SubResource("StyleBoxFlat_0rxx2")
 max_value = 150.0

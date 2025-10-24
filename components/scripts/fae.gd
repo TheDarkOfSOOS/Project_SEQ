@@ -19,8 +19,6 @@ var choosed_atk
 
 @onready var body_collider = $Body_collider
 
-@onready var healthbar = $Control/HealthBar
-
 @onready var projectile_spawnpoint = $Projectile_spawnpoint
 
 @onready var update_atk_timer = $Update_Atk
@@ -315,17 +313,6 @@ func is_grabbed():
 #	setto il movimento a true
 func _on_stun_timeout():
 	set_idle()
-
-#DIGEST DEL SEGNALE PROPRIO "set_health_bar", AGGIORNA LA BARRA DELLA SALUTE
-#	il valore della barra diventa uguale a quello della vita attuale
-#	se il valore della vita è minore o uguale a 0
-#		cancello il nodo dalla scena
-func set_health_bar():
-	healthbar.value = current_vit
-	if current_vit <= 0:
-		queue_free()
-	elif current_vit > default_vit:
-		current_vit = default_vit
 
 func _on_timer_timeout():
 	body_collider.disabled = false
