@@ -18,35 +18,32 @@ signal got_grabbed(is_grabbed)
 signal shake_camera(shake, strenght)
 
 var player_position
-var target_position
 
 enum Possible_Attacks {IDLE, PUNCH, EARTHQUAKE}
 var choosed_atk
 
-@onready var sprite = $Sprite2D
+var SPRITE_FLIP : bool
+var SPRITE_POSITION : Vector2
+var PUNCH_COLLIDER_POSITION_X : float
+var PUNCH_EFFECT_POSITION_X : float
+var PUNCH_EFFECT_FLIP : bool
+var BODY_COLLIDER_POSITION_X : float
+var BODY_COLLIDER_ROTATION : float
 
-@onready var punch_collider = $Punch_Area/Skill_collider
-@onready var punch_effect = $Punch_Area/Effect
+@onready var punch_collider : CollisionShape2D = $Punch_Area/Skill_collider
+@onready var punch_effect : AnimatedSprite2D = $Punch_Area/Effect
 
-@onready var earthquake_collider = $Earthquake_Area/Skill_collider
-@onready var earthquake_effect = $Earthquake_Area/Effect
+@onready var earthquake_collider : CollisionShape2D = $Earthquake_Area/Skill_collider
+@onready var earthquake_effect : AnimatedSprite2D = $Earthquake_Area/Effect
 
-@onready var body_collider = $Body_collider
+@onready var body_collider : CollisionShape2D = $Body_collider
 
-@onready var navigation_agent = $NavigationAgent2D
+@onready var punch_cooldown : Timer = $Punch_Cooldown
+@onready var earthquake_cooldown : Timer = $Earthquake_Cooldown
 
-@onready var punch_cooldown = $Punch_Cooldown
-@onready var earthquake_cooldown = $Earthquake_Cooldown
+@onready var update_atk_timer : Timer = $Update_Atk
 
-@onready var update_atk_timer = $Update_Atk
-
-var SPRITE_POSITION
-var PUNCH_COLLIDER_POSITION_X
-var PUNCH_EFFECT_POSITION_X
-var BODY_COLLIDER_POSITION_X
-var BODY_COLLIDER_ROTATION
-
-var player_in_atk_range = false
+var player_in_atk_range : bool = false
 
 #METODO CHE PARTE QUANDO VIENE ISTANZIATO IL NODO
 	#setta la vita attuale a quella massima
@@ -56,15 +53,37 @@ var player_in_atk_range = false
 func _ready():
 	var stats : Resource = load("res://components/resources/stats/giant_stats.tres")
 	load_stats(stats)
+	
+	SPRITE_POSITION = sprite.position
+	
+	SPRITE_FLIP = sprite.flip_h
+	PUNCH_EFFECT_FLIP = punch_effect.flip_h
+	
+	PUNCH_COLLIDER_POSITION_X = punch_collider.position.x
+	PUNCH_EFFECT_POSITION_X = punch_effect.position.x
+	BODY_COLLIDER_POSITION_X = body_collider.position.x
+	
+	BODY_COLLIDER_ROTATION = body_collider.rotation_degrees
+	
+	sprites_to_flip = [
+		sprite, SPRITE_FLIP,
+		punch_effect, PUNCH_EFFECT_FLIP
+	]
+	
+	nodes_to_flip = [ 
+		punch_collider, PUNCH_COLLIDER_POSITION_X,
+		punch_effect, PUNCH_EFFECT_POSITION_X,
+		body_collider, BODY_COLLIDER_POSITION_X
+	]
+	
+	nodes_to_flip_rotation = [
+		body_collider, BODY_COLLIDER_ROTATION
+	]
+	
 	healthbar.max_value = default_vit
 	set_health_bar()
 	sprite.play("idle")
 	update_atk_timer.wait_time = randf_range(3, 5.8)
-	SPRITE_POSITION = sprite.position
-	PUNCH_COLLIDER_POSITION_X = punch_collider.position.x
-	PUNCH_EFFECT_POSITION_X = punch_effect.position.x
-	BODY_COLLIDER_POSITION_X = body_collider.position.x
-	BODY_COLLIDER_ROTATION = body_collider.rotation_degrees
 
 #METODO CHE VIENE PROCESSATO PER FRAME
 	#controlla se il player è entrato in area e si può muovere
@@ -95,49 +114,6 @@ func _physics_process(delta):
 	#creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
 	#se il nodo è distante dal player di almeno 12 unità
 		#muovo il nodo verso il player con la velocità di 3
-
-func flip(distance_to_player):
-	if distance_to_player.x < 0:
-		punch_collider.position.x = -PUNCH_COLLIDER_POSITION_X
-		punch_effect.position.x = -PUNCH_EFFECT_POSITION_X
-		punch_effect.flip_h = true
-		sprite.flip_h = true
-		body_collider.rotation_degrees = -BODY_COLLIDER_ROTATION
-		body_collider.position.x = -6.835
-		if grabbed:
-			sprite.rotation_degrees = -90;
-	elif distance_to_player.x > 0:
-		punch_collider.position.x = PUNCH_COLLIDER_POSITION_X
-		punch_effect.position.x = PUNCH_EFFECT_POSITION_X
-		punch_effect.flip_h = false
-		sprite.flip_h = false
-		body_collider.rotation_degrees = BODY_COLLIDER_ROTATION
-		body_collider.position.x = 11.151
-		if grabbed:
-			sprite.rotation_degrees = 90;
-
-func chase_player():
-	if player:
-		navigation_agent.target_position = player.global_position
-		
-		if navigation_agent.is_navigation_finished():
-			if sprite.animation == "running":
-				sprite.play("idle")
-		else:
-			var current_agent_position = global_position
-			target_position = navigation_agent.get_next_path_position()
-			
-			var new_velocity = global_position.direction_to(target_position) * current_des
-			
-			if navigation_agent.avoidance_enabled:
-				navigation_agent.set_velocity(new_velocity)
-			else:
-				_on_navigation_agent_2d_velocity_computed(new_velocity)
-			
-			sprite.play("running")
-			move_and_slide()
-		var player_position = (player.position - position).normalized()
-		flip(player_position)
 
 func choose_atk():
 	var rng = randi_range(0,100)
@@ -312,9 +288,6 @@ func _on_update_atk_timeout():
 	choose_atk()
 	update_atk_timer.wait_time = randf_range(3, 5.8)
 	update_atk_timer.start()
-
-func _on_navigation_agent_2d_velocity_computed(safe_velocity):
-	velocity = safe_velocity
 
 func _on_knockback_reset():
 	super._on_knockback_reset()

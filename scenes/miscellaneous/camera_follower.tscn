@@ -17,6 +17,7 @@ wall_min_slide_angle = 0.0
 script = ExtResource("1_s07rb")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
 rotation = -1.5708
 shape = SubResource("CapsuleShape2D_s07rb")
 

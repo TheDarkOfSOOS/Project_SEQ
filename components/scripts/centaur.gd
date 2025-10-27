@@ -11,8 +11,6 @@ signal change_stats(stat, amount, time_duration, ally_sender)
 signal inflict_knockback(amount, force, sender)
 signal shake_camera(shake, strenght)
 
-var target_position
-
 enum Possible_Attacks {IDLE, HALBERD, SPRINT, TEMPERANCE}
 var choosed_atk
 
@@ -29,7 +27,7 @@ var first_enter = true
 @onready var halberd_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
 @export var sprint_duration = 5
 @export var sprint_force = 17
-@export var sprint_multiplyer = 800
+@export var sprint_multiplyer = 400
 @export var sprint_knockback_amount = 400
 @export var sprint_knockback_force = 9.2
 @onready var sprint_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
@@ -37,33 +35,32 @@ var first_enter = true
 @export var temperance_amount = 60
 @export var temperance_duration = 50
 
-@onready var navigation_agent = $NavigationAgent2D
+var SPRITE_FLIP : bool
+var UPPER_BODY_COLLIDER_X : float
+var HALBERD_COLLIDER_X : float
+var SPRINT_COLLIDER_X : float
 
-@onready var sprite = $Sprite2D
+@onready var safe_timer : Timer = $Safe_timer
 
-@onready var safe_timer = $Safe_timer
+@onready var body_collider : CollisionShape2D = $Body_collider
+@onready var upper_body_collider : CollisionShape2D = $Body_collider_upper
 
-@onready var body_collider = $Body_collider
-@onready var upper_body_collider = $Body_collider_upper
+@onready var halberd_collider : CollisionShape2D = $Halberd_area/Collider
 
-@onready var halberd_area = $Halberd_area
-@onready var halberd_collider = $Halberd_area/Collider
+@onready var sprint_collider : CollisionShape2D = $Sprint_area/Collider
+@onready var sprint_duration_timer : Timer = $Sprint_area/Sprint_duration
+@onready var sprint_reset_collider : CollisionShape2D = $Reset_sprint_area/Collision
 
-@onready var sprint_area = $Sprint_area
-@onready var sprint_collider = $Sprint_area/Collider
-@onready var sprint_duration_timer = $Sprint_area/Sprint_duration
-@onready var sprint_reset_collider = $Reset_sprint_area/Collision
+@onready var update_atk_timer : Timer = $Update_Atk
 
-@onready var update_atk_timer = $Update_Atk
+@onready var grab_position_marker : Marker2D = $Grab_position
+@onready var animation_player : AnimationPlayer = $AnimationPlayer
 
-@onready var grab_position_marker = $Grab_position
-@onready var animation_player = $AnimationPlayer
+@onready var halberd_cooldown : Timer = $Halberd_cooldown
+@onready var sprint_cooldown : Timer = $Sprint_cooldown
+@onready var temperance_cooldown : Timer = $Temperance_cooldown
 
-@onready var halberd_cooldown = $Halberd_cooldown
-@onready var sprint_cooldown = $Sprint_cooldown
-@onready var temperance_cooldown = $Temperance_cooldown
-
-var player_in_atk_range = false
+var player_in_atk_range : bool = false
 
 #METODO CHE PARTE QUANDO VIENE ISTANZIATO IL NODO
 	#setta la vita attuale a quella massima
@@ -73,6 +70,21 @@ var player_in_atk_range = false
 func _ready():
 	var stats : Resource = load("res://components/resources/stats/centaur_stats.tres")
 	load_stats(stats)
+	
+	SPRITE_FLIP = sprite.flip_h
+	UPPER_BODY_COLLIDER_X = upper_body_collider.position.x
+	HALBERD_COLLIDER_X = halberd_collider.position.x
+	SPRINT_COLLIDER_X = sprint_collider.position.x
+	
+	sprites_to_flip = [ 
+		sprite, SPRITE_FLIP
+	]
+	
+	nodes_to_flip = [ 
+		upper_body_collider, UPPER_BODY_COLLIDER_X,  
+		halberd_collider, HALBERD_COLLIDER_X,  
+		sprint_collider, SPRINT_COLLIDER_X
+	]
 	
 	healthbar.max_value = default_vit
 	set_health_bar()
@@ -111,46 +123,6 @@ func _physics_process(delta):
 	elif grabbed:
 		is_grabbed()
 
-#METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
-	#salvo la posizione attuale del player
-	#creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
-	#se il nodo è distante dal player di almeno 12 unità
-		#muovo il nodo verso il player con la velocità di 3
-
-func flip(distance_to_player):
-	if distance_to_player.x < 0:
-		sprite.flip_h = true
-		upper_body_collider.position.x = -38
-		halberd_collider.position.x = -83
-		sprint_collider.position.x = -134
-	elif distance_to_player.x > 0:
-		sprite.flip_h = false
-		upper_body_collider.position.x = 38
-		halberd_collider.position.x = 83
-		sprint_collider.position.x = 134
-
-func chase_player():
-	if player:
-		navigation_agent.target_position = player.global_position
-		
-		if navigation_agent.is_navigation_finished():
-			if sprite.animation == "running":
-				sprite.play("idle")
-		else:
-			target_position = navigation_agent.get_next_path_position()
-			
-			var new_velocity = global_position.direction_to(target_position) * current_des
-			
-			if navigation_agent.avoidance_enabled:
-				navigation_agent.set_velocity(new_velocity)
-			else:
-				_on_navigation_agent_2d_velocity_computed(new_velocity)
-			
-			sprite.play("running")
-			move_and_slide()
-		var player_position = (player.position - position).normalized()
-		flip(player_position)
-
 func sprint_to_target():
 	if is_instance_valid(player):
 		var direction = global_position.direction_to(target_location)
@@ -161,8 +133,13 @@ func sprint_to_target():
 		
 		if global_position.distance_to(origin) >= target_location.distance_to(origin):
 			direction = first_direction
-			
-		velocity = direction * sprint_multiplyer
+		
+		if direction.x > 0:
+			flip(true)
+		else:
+			flip(false)
+		
+		velocity = direction * (current_des + sprint_multiplyer)
 		move_and_slide()
 
 func choose_atk():
@@ -174,7 +151,7 @@ func choose_atk():
 	else:
 		choosed_atk = Possible_Attacks.TEMPERANCE
 	
-	#choosed_atk = Possible_Attacks.TEMPERANCE
+	#choosed_atk = Possible_Attacks.SPRINT
 	
 #DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
 #{
@@ -389,9 +366,6 @@ func _on_safe_timer_timeout() -> void:
 func _on_update_atk_timeout():
 	choose_atk()
 	update_atk_timer.start()
-
-func _on_navigation_agent_2d_velocity_computed(safe_velocity):
-	velocity = safe_velocity
 
 func _on_knockback_reset():
 	super._on_knockback_reset()

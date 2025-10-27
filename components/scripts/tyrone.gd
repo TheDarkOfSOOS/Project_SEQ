@@ -20,8 +20,10 @@ signal shake_camera(shake, strenght)
 var initial_y_position = 0
 const MAX_Y_POSITION = 270
 
-var BASIC_ATK_COLLIDER_POSITION_X
-var SKILL1_COLLIDER_POSITION_X
+var SPRITE_FLIP : bool
+var SKILL1_EFFECT_FLIP : bool
+var BASIC_ATK_COLLIDER_POSITION_X : float
+var SKILL1_COLLIDER_POSITION_X : float
 
 var atk_state = Atk_States.IDLE
 
@@ -64,32 +66,32 @@ var ult_moving_mod
 @export var ult_knockback_force = 8
 @onready var ult_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
 
-@onready var sprite = $Sprite2D
+@onready var sprite : AnimatedSprite2D = $Sprite2D
 @onready var camera
 
-@onready var bs_atk_collider = $Basic_atk_Area/Atk_collider
+@onready var bs_atk_collider : CollisionShape2D = $Basic_atk_Area/Atk_collider
 
-@onready var skill1_collider = $Skill_1_area/Skill_collider
-@onready var skill1_effect = $Skill_1_area/Effect
+@onready var skill1_collider : CollisionShape2D = $Skill_1_area/Skill_collider
+@onready var skill1_effect : AnimatedSprite2D = $Skill_1_area/Effect
 
-@onready var eva_collider = $Eva_area/Eva_collider
-@onready var eva_duration_timer = $Eva_area/Eva_time
+@onready var eva_collider : CollisionShape2D = $Eva_area/Eva_collider
+@onready var eva_duration_timer : Timer = $Eva_area/Eva_time
 
-@onready var skill2_collider = $Skill2_area/Skill_collider
-@onready var skill2_effect = $Skill2_area/Effect
+@onready var skill2_collider : CollisionShape2D = $Skill2_area/Skill_collider
+@onready var skill2_effect : AnimatedSprite2D = $Skill2_area/Effect
 
-@onready var ult_collider = $Ult_area/Ult_collider
-@onready var ult_effect = $Ult_area/Effect
-@onready var ult_stop_timer = $Ult_area/Ult_time
+@onready var ult_collider : CollisionShape2D = $Ult_area/Ult_collider
+@onready var ult_effect : AnimatedSprite2D = $Ult_area/Effect
+@onready var ult_stop_timer : Timer = $Ult_area/Ult_time
 
-@onready var skill1_cooldown = $Skill1_cooldown
-@onready var skill2_cooldown = $Skill2_cooldown
-@onready var eva_cooldown = $Eva_cooldown
-@onready var ulti_cooldown = $Ulti_cooldown
+@onready var skill1_cooldown : Timer = $Skill1_cooldown
+@onready var skill2_cooldown : Timer = $Skill2_cooldown
+@onready var eva_cooldown : Timer = $Eva_cooldown
+@onready var ulti_cooldown : Timer = $Ulti_cooldown
 
-@onready var body_collider = $Body_collider
+@onready var body_collider : CollisionShape2D = $Body_collider
 
-@onready var combo_time = $Combo_time
+@onready var combo_time : Timer = $Combo_time
 
 var skill2_cooldown_duration = 2
 
@@ -107,8 +109,12 @@ func _ready():
 	load_stats(stats)
 	char_name = "Tyrone"
 	
+	SPRITE_FLIP = sprite.flip_h
+	SKILL1_EFFECT_FLIP = skill1_effect.flip_h
 	BASIC_ATK_COLLIDER_POSITION_X = bs_atk_collider.position.x
 	SKILL1_COLLIDER_POSITION_X = skill1_collider.position.x
+	
+	
 	
 	skill2_cooldown.wait_time = skill2_cooldown_duration
 	
@@ -169,11 +175,11 @@ func reset_axis():
 	velocity = Vector2.ZERO
 	axis = Vector2.ZERO
 
-'METODO CHE GESTISCE TUTTE LE ABILITA\' DEL PLAYER
-	ad ogni if si controlla l\'azione possibile, per l\'attacco di base si trovano
-	dei controlli aggiuntivi in base alla combo:
-	si controlla come prima cosa se l\'input è stato premuto, se l\'animazione è diversa da idle o running (ovvero o è fermo
-	o si sta spostando) oppure il numero di combo che sta facendo ed infine se non è in cooldown'
+#METODO CHE GESTISCE TUTTE LE ABILITA' DEL PLAYER
+	#ad ogni if si controlla l'azione possibile, per l'attacco di base si trovano
+	#dei controlli aggiuntivi in base alla combo:
+	#si controlla come prima cosa se l'input è stato premuto, se l'animazione è diversa da idle o running (ovvero o è fermo
+	#o si sta spostando) oppure il numero di combo che sta facendo ed infine se non è in cooldown
 
 func atk_handler():
 	if Input.is_action_just_pressed("base_atk") and (sprite.animation == "idle" or sprite.animation == "running") and atk_anim_finished and not can_interact_with_something:

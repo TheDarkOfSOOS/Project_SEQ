@@ -572,7 +572,7 @@ wait_time = 10.0
 one_shot = true
 
 [node name="Heal_charge_time" type="Timer" parent="."]
-wait_time = 6.0
+wait_time = 4.0
 one_shot = true
 
 [node name="Magic_dart_cooldown" type="Timer" parent="."]

@@ -17,26 +17,29 @@ signal got_grabbed(is_grabbed)
 signal shake_camera(shake, strenght)
 
 var player_position
-var target_position
 
-enum Possible_Attacks {IDLE, BASIC_ATK, PARRY}
+enum Possible_Attacks {IDLE, SLICE, PARRY}
 var choosed_atk
 
-@onready var sprite = $Sprite2D
-@onready var basic_atk_effect = $Basic_atk_Area/Effect
-@onready var basic_atk_collider = $Basic_atk_Area/Skill_collider
-@onready var body_collider = $Body_collider
+var SPRITE_FLIP : bool
+var BODY_COLLIDER_X : float
+var BODY_COLLIDER_ROTATION : float
+var SLICE_FLIP : bool
+var SLICE_EFFECT_X : float
+var SLICE_COLLIDER_X : float
 
-@onready var parry_time = $Parry_time
+@onready var slice_effect : AnimatedSprite2D = $Basic_atk_Area/Effect
+@onready var slice_collider : CollisionShape2D = $Basic_atk_Area/Skill_collider
+@onready var body_collider : CollisionShape2D = $Body_collider
 
-@onready var soul_delay_timer = $Soul_delay_time
+@onready var parry_time : Timer = $Parry_time
 
-@onready var navigation_agent = $NavigationAgent2D
+@onready var soul_delay_timer : Timer = $Soul_delay_time
 
-@onready var update_atk_timer = $Update_Atk
+@onready var update_atk_timer : Timer = $Update_Atk
 
-@onready var slash_cooldown = $Basic_atk_Cooldown
-@onready var patty_cooldown = $Parry_Cooldown
+@onready var slash_cooldown : Timer = $Basic_atk_Cooldown
+@onready var patty_cooldown : Timer = $Parry_Cooldown
 
 var player_in_atk_range = false
 
@@ -48,6 +51,28 @@ var player_in_atk_range = false
 func _ready():
 	var stats : Stats = load("res://components/resources/stats/skeleton_stats.tres")
 	load_stats(stats)
+	
+	SPRITE_FLIP = sprite.flip_h
+	BODY_COLLIDER_X = body_collider.position.x
+	BODY_COLLIDER_ROTATION = body_collider.rotation_degrees
+	SLICE_FLIP = slice_effect.flip_h
+	SLICE_EFFECT_X = slice_effect.position.x
+	SLICE_COLLIDER_X = slice_collider.position.x
+	
+	sprites_to_flip = [
+		sprite, SPRITE_FLIP, 
+		slice_effect, SLICE_FLIP
+	]
+	
+	nodes_to_flip = [
+		body_collider, BODY_COLLIDER_X,
+		slice_collider, SLICE_COLLIDER_X,
+		slice_effect, SLICE_EFFECT_X
+	]
+	
+	nodes_to_flip_rotation = [
+		body_collider, BODY_COLLIDER_ROTATION
+	]
 	
 	healthbar.max_value = current_vit
 	set_health_bar()
@@ -69,10 +94,10 @@ func _physics_process(delta):
 	elif knockbacked:
 		apply_knockback(delta)
 	elif grabbed:
-		is_grabbed()
+		pass
 	elif is_instance_valid(player) and moving:
 		chase_player()
-		if choosed_atk == Possible_Attacks.BASIC_ATK and slash_cooldown.is_stopped():
+		if choosed_atk == Possible_Attacks.SLICE and slash_cooldown.is_stopped():
 			basic_atk()
 		elif choosed_atk == Possible_Attacks.PARRY and patty_cooldown.is_stopped():
 			parry()
@@ -81,53 +106,12 @@ func _physics_process(delta):
 	elif not is_instance_valid(player) and moving:
 		sprite.play("idle")
 
-#METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
-	#salvo la posizione attuale del player
-	#creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
-	#se il nodo è distante dal player di almeno 12 unità
-		#muovo il nodo verso il player con la velocità di 3
-
-func flip(distance_to_player):
-	if distance_to_player.x < 0:
-		basic_atk_effect.position = Vector2(-57, 12)
-		basic_atk_effect.flip_h = false
-		sprite.flip_h = true
-		basic_atk_collider.position = Vector2(-48, 16)
-		body_collider.position.x = 2
-		body_collider.rotation_degrees = -16
-		if grabbed:
-			sprite.rotation_degrees = -90;
-	elif distance_to_player.x > 0:
-		basic_atk_effect.position = Vector2(57, 12)
-		basic_atk_effect.flip_h = true
-		sprite.flip_h = false
-		basic_atk_collider.position = Vector2(48, 16)
-		body_collider.position.x = -1
-		body_collider.rotation_degrees = 16
-		if grabbed:
-			sprite.rotation_degrees = 90;
-
-func chase_player():
-	if player and not knockbacked:
-		navigation_agent.target_position = player.global_position
-		target_position = navigation_agent.get_next_path_position()
-		
-		if navigation_agent.is_navigation_finished():
-			if sprite.animation == "running":
-				sprite.play("idle")
-		else:
-			self.velocity = global_position.direction_to(target_position) * current_des
-			
-			sprite.play("running")
-			move_and_slide()
-		flip((target_position - self.position).normalized())
-
 func choose_atk():
 	var rng = randi_range(0,100)
 	if rng >= 0 and rng < 10:
 		choosed_atk = Possible_Attacks.IDLE
 	elif rng >= 10 and rng < 55:
-		choosed_atk = Possible_Attacks.BASIC_ATK
+		choosed_atk = Possible_Attacks.SLICE
 	elif rng >= 55:
 		choosed_atk = Possible_Attacks.PARRY
 		
@@ -204,12 +188,6 @@ func _on_player_grab(is_been_grabbed, is_flipped, grab_position_marker):
 			sprite.rotation_degrees = 0;
 			healthbar.visible = true
 
-# METODO CHE TELETRASPORTA IL NODO NELLA POSIZIONE DEL PLAYER DURANTE LA GRAB #
-
-func is_grabbed():
-	flip((player.position - position).normalized())
-	position = grab_position.global_position
-
 #DIGEST DEL TIMER "Stun"
 	#setto il movimento a true
 
@@ -249,7 +227,7 @@ func set_idle():
 		if parring:
 			parring = false
 		sprite.play("idle")
-		basic_atk_effect.play("idle")
+		slice_effect.play("idle")
 		body_collider.set_deferred("disabled", false)
 
 func _on_basic_atk_area_body_entered(body):
@@ -261,15 +239,15 @@ func _on_basic_atk_area_body_exited(body):
 		player_in_atk_range = false
 
 func _on_effect_animation_finished():
-	if stun_timer.is_stopped() and basic_atk_effect.animation == "effect" and not grabbed and player_in_atk_range and not (soul_out or dying):
+	if stun_timer.is_stopped() and slice_effect.animation == "effect" and not grabbed and player_in_atk_range and not (soul_out or dying):
 		emit_signal("take_dmg", current_str, slice_force, slice_stun_time, current_pbc, current_efc, slice_type, self)
-	basic_atk_effect.play("idle")
+	slice_effect.play("idle")
 	set_idle()
 	
 func basic_atk():
 	if is_instance_valid(player) and stun_timer.is_stopped() and not grabbed and player_in_atk_range and not parring:
 		moving = false
-		basic_atk_effect.play("effect")
+		slice_effect.play("effect")
 		sprite.play("attack")
 	slash_cooldown.start()
 

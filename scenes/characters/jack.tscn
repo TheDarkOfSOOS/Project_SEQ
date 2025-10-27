@@ -1336,6 +1336,7 @@ scale = Vector2(1.2, 1.2)
 sprite_frames = SubResource("SpriteFrames_dte57")
 animation = &"p_idle"
 autoplay = "p_idle"
+frame_progress = 0.841683
 metadata/_aseprite_wizard_interface_config_ = {
 "layer_section": false,
 "output_section": false,

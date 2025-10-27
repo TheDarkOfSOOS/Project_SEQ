@@ -536,7 +536,7 @@ bg_color = Color(0.219608, 0.219608, 0.219608, 1)
 bg_color = Color(1, 0, 0.0352941, 1)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vnrqd"]
-size = Vector2(40.5, 115)
+size = Vector2(60, 115)
 
 [sub_resource type="Animation" id="Animation_6bd6i"]
 length = 0.001
@@ -662,7 +662,7 @@ collision_layer = 2
 collision_mask = 5
 
 [node name="Collider" type="CollisionShape2D" parent="Claws_area"]
-position = Vector2(33, 5)
+position = Vector2(30, 5)
 shape = SubResource("RectangleShape2D_vnrqd")
 debug_color = Color(1, 0, 0, 0.0352941)
 
@@ -692,7 +692,7 @@ one_shot = true
 autostart = true
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
-target_desired_distance = 80.0
+target_desired_distance = 75.0
 path_max_distance = 10.0
 navigation_layers = 3
 path_postprocessing = 1

@@ -22,29 +22,27 @@ enum Possible_Attacks {IDLE, WITCHCRAFT, DEATH_SPHERE, EXPLOSIONS, EVOCATION, TE
 var choosed_atk
 
 # riferimenti ai nodi
-@onready var sprite = $Sprite2D
+@onready var body_collider : CollisionShape2D = $Body_collider
 
-@onready var body_collider = $Body_collider
+@onready var witchcraft_spawnpoint : Marker2D = $Witchcraft_spawnpoint
+@onready var death_sphere_spawnpoint : Marker2D = $Death_sphere_spawnpoint
 
-@onready var witchcraft_spawnpoint = $Witchcraft_spawnpoint
-@onready var death_sphere_spawnpoint = $Death_sphere_spawnpoint
+@onready var explosion_container : Node2D = $Explosions_container
+@onready var first_round_container : Node2D = $Explosions_container/First_round
+@onready var second_round_container : Node2D = $Explosions_container/Second_round
+@onready var third_round_container : Node2D = $Explosions_container/Third_round
+@onready var second_round_timer : Timer = $Explosions_container/Second_round_timer
+@onready var third_round_timer : Timer = $Explosions_container/Third_round_timer
+@onready var reset_explosions : Timer = $Explosions_container/Reset
 
-@onready var explosion_container = $Explosions_container
-@onready var first_round_container = $Explosions_container/First_round
-@onready var second_round_container = $Explosions_container/Second_round
-@onready var third_round_container = $Explosions_container/Third_round
-@onready var second_round_timer = $Explosions_container/Second_round_timer
-@onready var third_round_timer = $Explosions_container/Third_round_timer
-@onready var reset_explosions = $Explosions_container/Reset
+@onready var teleport_cooldown : Timer = $Teleport_Cooldown
+@onready var witchcraft_cooldown : Timer = $Witchcraft_Cooldown
+@onready var death_sphere_cooldown : Timer = $Death_sphere_Cooldown
+@onready var explosions_cooldown : Timer = $Explosions_Cooldown
+@onready var evocation_cooldown : Timer = $Evocation_Cooldown
 
-@onready var teleport_cooldown = $Teleport_Cooldown
-@onready var witchcraft_cooldown = $Witchcraft_Cooldown
-@onready var death_sphere_cooldown = $Death_sphere_Cooldown
-@onready var explosions_cooldown = $Explosions_Cooldown
-@onready var evocation_cooldown = $Evocation_Cooldown
-
-@onready var update_atk_timer = $Update_Atk
-@onready var set_idle_timer = $Inhale_time
+@onready var update_atk_timer : Timer = $Update_Atk
+@onready var set_idle_timer : Timer = $Inhale_time
 
 var player_in_atk_range = false
 
@@ -134,19 +132,6 @@ func _physics_process(delta):
 		elif not is_instance_valid(player) and moving: # se il player non è dentro e non può muoversi
 			sprite.play("idle") # lo metto in idle, non ha niente da fare tanto
 
-# METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
-#	salvo la posizione attuale del player
-#	creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
-#	se il nodo è distante dal player di almeno 12 unità
-#		muovo il nodo verso il player con la velocità di 3
-
-# -- INUTILE, LO TENGO PER PARCONDICIO -- #
-func flip(distance_to_player):
-	if distance_to_player.x < 0:
-		pass
-	elif distance_to_player.x > 0:
-		pass
-
 # METODO CHE GESTISCE LA SCELTA DELL'ATTACCO
 func choose_atk():
 	var rng = randi_range(0,100)
@@ -213,8 +198,8 @@ func _on_player_grab(is_been_grabbed, is_flipped, grab_position_marker):
 	# QUESTO BOSS NON E' GRABBABILE
 	pass
 
-'DIGEST DEL TIMER "Stun"
-	setto il movimento a true'
+#DIGEST DEL TIMER "Stun"
+	#setto il movimento a true
 
 func _on_stun_timeout():
 	if not dying:

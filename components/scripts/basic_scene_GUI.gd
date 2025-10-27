@@ -38,6 +38,7 @@ func _on_boss_set_healthbar(vit):
 		boss.update_atk_timer.stop()
 		boss.set_idle_timer.stop()
 		boss.stun_timer.stop()
+		dramatic_slow_motion(0.15, 3)
 		animation_player.play("delete_boss_bar")
 		if QuestManager.quests["the_bigger_they_are"].status == QuestStatus.of_type.started:
 			QuestManager.quests["the_bigger_they_are"].reach_goal_quest()
@@ -59,3 +60,8 @@ func _on_animation_player_animation_finished(anim_name):
 	if anim_name == "delete_boss_bar":
 		boss = null
 		healthbar.max_value = 100
+
+func dramatic_slow_motion(time_reduction : float = 0.3, duration : float = 0.5):
+	Engine.time_scale = time_reduction
+	await get_tree().create_timer(duration, true, false, true).timeout
+	Engine.time_scale = 1.0

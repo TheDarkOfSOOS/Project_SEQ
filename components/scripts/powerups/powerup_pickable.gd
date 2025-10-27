@@ -1,4 +1,4 @@
-extends StaticBody2D
+class_name Powerup_Pick extends StaticBody2D
 
 var player
 var handler

@@ -26,6 +26,10 @@ var knockbacked : bool = false
 var knockback_target_point
 var knockback_force
 
+var sprites_to_flip : Array
+var nodes_to_flip : Array
+var nodes_to_flip_rotation : Array
+
 @onready var hit_flash_player : AnimationPlayer = $Hit_flash_player
 
 @onready var hitmarker_spawnpoint = $Hitmarker_spawn
@@ -38,7 +42,7 @@ const status_icon : PackedScene = preload("res://scenes/miscellaneous/status_ico
 
 func load_stats(stats : Resource) -> void:
 	default_vit = stats.vit
-	#default_vit = 1000000000
+	#default_vit = 1
 	default_str = stats.str
 	default_tem = stats.tem
 	default_des = stats.des
@@ -51,6 +55,32 @@ func load_stats(stats : Resource) -> void:
 	current_des = default_des
 	current_pbc = default_pbc
 	current_efc = default_efc
+
+func flip(is_flipped):
+	if is_flipped:
+		for i in sprites_to_flip.size():
+			if sprites_to_flip[i] is not bool:
+				sprites_to_flip[i].flip_h = sprites_to_flip[i+1]
+		
+		for i in nodes_to_flip.size():
+			if nodes_to_flip[i] is not float:
+				nodes_to_flip[i].position.x = nodes_to_flip[i+1]
+		
+		for i in nodes_to_flip_rotation.size():
+			if nodes_to_flip_rotation[i] is not float:
+				nodes_to_flip_rotation[i].rotation_degrees = nodes_to_flip_rotation[i+1]
+	else:
+		for i in sprites_to_flip.size():
+			if sprites_to_flip[i] is not bool:
+				sprites_to_flip[i].flip_h = not sprites_to_flip[i+1]
+		
+		for i in nodes_to_flip.size():
+			if nodes_to_flip[i] is not float:
+				nodes_to_flip[i].position.x = -nodes_to_flip[i+1]
+		
+		for i in nodes_to_flip_rotation.size():
+			if nodes_to_flip_rotation[i] is not float:
+				nodes_to_flip_rotation[i].rotation_degrees = -nodes_to_flip_rotation[i+1]
 
 func show_hitmarker(string : String, crit : bool, hitmarker_spawnpoint : Marker2D) -> void:
 	# istanzio l'hitmarker 

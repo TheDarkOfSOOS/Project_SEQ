@@ -33,8 +33,8 @@ var camera_follower : String = "res://scenes/miscellaneous/camera_follower.tscn"
 
 # array che contiene i tileset
 var tilesets : Array = [
-						"res://scenes/tilemaps/deep_forest_2_tilemap.tscn",
 						"res://scenes/tilemaps/deep_forest_tile_map.tscn",
+						"res://scenes/tilemaps/deep_forest_2_tilemap.tscn",
 						"res://scenes/tilemaps/forest_2_tilemap.tscn",
 						"res://scenes/tilemaps/gray_tile_map.tscn",
 						"res://scenes/tilemaps/forest_tile_map.tscn"
@@ -74,7 +74,6 @@ func _ready():
 	active_enemy_container.instantiate_pickup.connect(powerup_handler._on_instantiate_pickable)
 	powerup_handler.spawn_pickable.connect(active_enemy_container._on_powerup_handler_spawn_pickable)
 	
-
 func _process(_delta):
 	## stampa dei possibili output di danni per la formula, utile per testarla
 	#if Input.is_action_just_pressed("base_atk"):
@@ -294,6 +293,7 @@ func _on_change_stage():
 	active_enemy_container.boss_defeted.connect(self._on_boss_defeted)
 	active_enemy_container.connect_boss_with_GUI.connect(round_gui._on_boss_spawned)
 	active_enemy_container.heal_between_rounds.connect(player._on_get_healed)
+	active_enemy_container.scene_manager = self
 	
 	round_gui.powerup_spawnable.connect(active_enemy_container._on_powerup_spawnable)
 	active_enemy_container.instantiate_pickup.connect(powerup_handler._on_instantiate_pickable)

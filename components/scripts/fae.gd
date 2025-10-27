@@ -8,14 +8,11 @@ signal got_grabbed(is_grabbed)
 signal change_stats(stat, amount, time_duration, ally_sender)
 signal shake_camera(shake, strenght)
 
-var target_position
-
 enum Possible_Attacks {IDLE, MAGIC_DART, ENCHANTMENT, HEAL}
 var choosed_atk
 
-@onready var navigation_agent = $NavigationAgent2D
-
-@onready var sprite = $Sprite2D
+var SPRITE_FLIP
+var BODY_COLLIDER_POSITION_X
 
 @onready var body_collider = $Body_collider
 
@@ -50,6 +47,18 @@ var flee_activated = false
 func _ready():
 	var stats : Resource = load("res://components/resources/stats/fae_stats.tres")
 	load_stats(stats)
+	
+	SPRITE_FLIP = sprite.flip_h
+	BODY_COLLIDER_POSITION_X = body_collider.position.x
+	
+	sprites_to_flip = [
+		sprite, SPRITE_FLIP
+	]
+	
+	nodes_to_flip = [ 
+		body_collider, BODY_COLLIDER_POSITION_X
+	]
+	
 	healthbar.max_value = default_vit
 	set_health_bar()
 	sprite.play("idle")
@@ -61,13 +70,14 @@ func _ready():
 #		allora comincia a vagare
 #	controlla se è grabbato
 #		allora fa partire il metodo grab()
+
 func _physics_process(delta):
 	if knockbacked:
 		apply_knockback(delta)
 	elif grabbed:
 		is_grabbed()
 	elif is_instance_valid(player) and moving:
-		chase_player()
+		chase_player(flee_activated)
 		if choosed_atk == Possible_Attacks.MAGIC_DART and magic_dart_cooldown.is_stopped() and not flee_activated:
 			sprite.play("launch_dart")
 			moving = false
@@ -89,51 +99,6 @@ func _physics_process(delta):
 	elif not is_instance_valid(player) and moving:
 		sprite.play("idle")
 
-#METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
-#	salvo la posizione attuale del player
-#	creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
-#	se il nodo è distante dal player di almeno 12 unità
-#		muovo il nodo verso il player con la velocità di 3
-func flip(distance_to_player):
-	if distance_to_player.x < 0:
-		sprite.flip_h = true
-		body_collider.position.x = -3
-		if grabbed:
-			sprite.rotation_degrees = -90;
-	elif distance_to_player.x > 0:
-		sprite.flip_h = false
-		body_collider.position.x = 3
-		if grabbed:
-			sprite.rotation_degrees = 90;
-	
-
-func chase_player():
-	if is_instance_valid(player) or flee_activated:
-		if not flee_activated:
-			navigation_agent.target_position = player.global_position
-		
-		if navigation_agent.is_navigation_finished():
-			if sprite.animation == "running":
-				sprite.play("idle")
-		else:
-			target_position = navigation_agent.get_next_path_position()
-			
-			var new_velocity = global_position.direction_to(target_position) * current_des
-			
-			if navigation_agent.avoidance_enabled:
-				navigation_agent.set_velocity(new_velocity)
-			else:
-				_on_navigation_agent_2d_velocity_computed(new_velocity)
-			
-			sprite.play("running")
-			move_and_slide()
-		
-		if not flee_activated:
-			var player_position = (player.position - position).normalized()
-			flip(player_position)
-		else:
-			flip((navigation_agent.target_position - position).normalized())
-
 func choose_atk():
 	var rng = randi_range(0,100)
 	if rng < 40:
@@ -143,7 +108,7 @@ func choose_atk():
 	else:
 		choosed_atk = Possible_Attacks.HEAL
 	
-	#choosed_atk = Possible_Attacks.HEAL
+	choosed_atk = Possible_Attacks.HEAL
 
 #DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
 #{
@@ -159,6 +124,7 @@ func choose_atk():
 #		impedisco al nodo di muoversi mentre viene attaccato
 #		imposto il tempo di stun con il parametro passato
 #		faccio partire il timer dello stun
+
 func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, sender):
 	if is_in_atk_range and not grabbed and not knockbacked:
 		var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
@@ -261,15 +227,16 @@ func heal():
 			allies.append(i)
 	
 	if allies.size() > 0:
-		var target = allies[0]
+		var target : Enemy = allies[0]
 		
 		for i in allies:
 			if (i.current_vit*100)/i.default_vit < (target.current_vit*100)/target.default_vit:
-				target = i
+				if i is Skeleton and (i.dying or i.soul_out):
+					pass
+				else:
+					target = i
 		
-		target.current_vit += heal_amount
-		target.set_health_bar()
-		target.status_sprite.play("recover")
+		target._on_get_healed(heal_amount)
 
 # //////////// AREA COMUNE TRA NODI //////////// #
 
@@ -320,9 +287,6 @@ func _on_timer_timeout():
 func _on_update_atk_timeout():
 	choose_atk()
 	update_atk_timer.start(randf_range(2, 4.5))
-
-func _on_navigation_agent_2d_velocity_computed(safe_velocity):
-	velocity = safe_velocity
 
 func _on_knockback_reset():
 	super._on_knockback_reset()

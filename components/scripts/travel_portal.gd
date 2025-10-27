@@ -16,7 +16,6 @@ func _process(_delta):
 
 func _on_area_of_interaction_body_entered(body):
 	if body == player:
-		print("entrato")
 		player_in_range = true
 		player.can_interact_with_something = true
 

@@ -435,7 +435,7 @@ bg_color = Color(0.219608, 0.219608, 0.219608, 1)
 bg_color = Color(1, 0, 0.0352941, 1)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kr4ka"]
-size = Vector2(62.75, 129)
+size = Vector2(78, 129)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pal7e"]
 atlas = ExtResource("11_hpvul")
@@ -487,7 +487,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fhhjd"]
-size = Vector2(96, 137.5)
+size = Vector2(106, 137.5)
 
 [sub_resource type="Animation" id="Animation_6bd6i"]
 length = 0.001
@@ -612,12 +612,12 @@ collision_layer = 2
 collision_mask = 5
 
 [node name="Collider" type="CollisionShape2D" parent="Bite_Area"]
-visible = false
-position = Vector2(31.375, 16.5)
+position = Vector2(34, 16.5)
 shape = SubResource("RectangleShape2D_kr4ka")
 debug_color = Color(1, 0.00392157, 0.0666667, 0.109804)
 
 [node name="Effect" type="AnimatedSprite2D" parent="Bite_Area"]
+visible = false
 position = Vector2(49, 12)
 scale = Vector2(0.0875, 0.133333)
 sprite_frames = SubResource("SpriteFrames_g7j7j")
@@ -631,7 +631,7 @@ collision_mask = 5
 
 [node name="Collider" type="CollisionShape2D" parent="Sprint_Area"]
 visible = false
-position = Vector2(-5, 17.25)
+position = Vector2(0, 17.25)
 shape = SubResource("RectangleShape2D_fhhjd")
 disabled = true
 debug_color = Color(1, 1, 0, 0.054902)
@@ -663,6 +663,7 @@ navigation_layers = 3
 path_postprocessing = 1
 simplify_epsilon = 1.213
 max_neighbors = 20
+debug_enabled = true
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
 libraries = {

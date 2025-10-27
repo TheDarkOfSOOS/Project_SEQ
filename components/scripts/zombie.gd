@@ -8,12 +8,12 @@ signal take_dmg(str, atk_str, sec_stun, pbc, efc, type, sender)
 signal got_grabbed(is_grabbed)
 signal shake_camera(shake, strenght)
 
-var BODY_COLLIDER_POSITION_X
-var BODY_COLLIDER_ROTATION
-var BITE_EFFECT_X
-var BITE_COLLIDER_POSITION_X
-
-var target_position : Vector2
+var SPRITE_FLIP : bool
+var BODY_COLLIDER_POSITION_X : float
+var BODY_COLLIDER_ROTATION : float
+var BITE_EFFECT_X : float
+var BITE_EFFECT_FLIP : bool
+var BITE_COLLIDER_POSITION_X : float
 
 enum Possible_Attacks {IDLE, BITE, SPRINT}
 var choosed_atk
@@ -26,28 +26,24 @@ var sprinting = false
 
 @export var sprint_force = 20
 @export var sprint_stun_time = 0.3
-@export var sprint_multiplyer = 5
+@export var sprint_multiplyer = 150
 @export var sprint_duration = 6.0
 @onready var sprint_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
 
-@onready var navigation_agent = $NavigationAgent2D
+@onready var bite_effect : AnimatedSprite2D = $Bite_Area/Effect
+@onready var bite_collider : CollisionShape2D = $Bite_Area/Collider
 
-@onready var sprite = $Sprite2D
+@onready var body_collider : CollisionShape2D = $Body_collider
 
-@onready var bite_effect = $Bite_Area/Effect
-@onready var bite_collider = $Bite_Area/Collider
+@onready var sprint_collider : CollisionShape2D = $Sprint_Area/Collider
 
-@onready var body_collider = $Body_collider
+@onready var sprint_charge_time : Timer = $Charge_Time
+@onready var sprint_time : Timer = $Sprint_time
 
-@onready var sprint_collider = $Sprint_Area/Collider
+@onready var update_atk_timer : Timer = $Update_Atk
 
-@onready var sprint_charge_time = $Charge_Time
-@onready var sprint_time = $Sprint_time
-
-@onready var update_atk_timer = $Update_Atk
-
-@onready var bite_cooldown = $Bite_Cooldown
-@onready var sprint_cooldown = $Sprint_Cooldown
+@onready var bite_cooldown : Timer = $Bite_Cooldown
+@onready var sprint_cooldown : Timer = $Sprint_Cooldown
 
 var player_in_atk_range = false
 
@@ -60,12 +56,29 @@ func _ready():
 	var stats : Stats = load("res://components/resources/stats/zombie_stats.tres")
 	load_stats(stats)
 	
-	healthbar.max_value = default_vit
-	set_health_bar()
+	SPRITE_FLIP = sprite.flip_h
 	BODY_COLLIDER_POSITION_X = body_collider.position.x
 	BODY_COLLIDER_ROTATION = body_collider.rotation_degrees
 	BITE_EFFECT_X = bite_effect.position.x
+	BITE_EFFECT_FLIP = bite_effect.flip_h
 	BITE_COLLIDER_POSITION_X = bite_collider.position.x
+	
+	sprites_to_flip = [
+		sprite, SPRITE_FLIP,
+		bite_effect, BITE_EFFECT_FLIP
+	]
+	
+	nodes_to_flip = [
+		bite_collider, BITE_COLLIDER_POSITION_X,
+		bite_effect, BITE_EFFECT_X
+	]
+	
+	nodes_to_flip_rotation = [
+		body_collider, BODY_COLLIDER_POSITION_X
+	]
+	
+	healthbar.max_value = default_vit
+	set_health_bar()
 	sprite.play("idle")
 
 #METODO CHE VIENE PROCESSATO PER FRAME
@@ -80,7 +93,7 @@ func _physics_process(delta):
 	if knockbacked:
 		apply_knockback(delta)
 	elif grabbed:
-		is_grabbed()
+		pass
 	elif sprinting:
 		sprint_to_player()
 	elif is_instance_valid(player) and moving:
@@ -94,52 +107,17 @@ func _physics_process(delta):
 	elif not is_instance_valid(player) and moving:
 		sprite.play("idle")
 
-#METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
-	#salvo la posizione attuale del player
-	#creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
-	#se il nodo è distante dal player di almeno 12 unità
-		#muovo il nodo verso il player con la velocità di 3
-
-func flip(distance_to_player):
-	if distance_to_player.x < 0:
-		body_collider.position.x = BODY_COLLIDER_POSITION_X
-		body_collider.rotation_degrees = -BODY_COLLIDER_ROTATION
-		sprite.flip_h = true
-		bite_effect.position.x = -BITE_EFFECT_X
-		bite_effect.flip_h = false
-		bite_collider.position.x = -BITE_COLLIDER_POSITION_X
-		
-	elif distance_to_player.x > 0:
-		body_collider.position.x = -BODY_COLLIDER_POSITION_X
-		body_collider.rotation_degrees = BODY_COLLIDER_ROTATION
-		sprite.flip_h = false
-		bite_effect.position.x = BITE_EFFECT_X
-		bite_effect.flip_h = true
-		bite_collider.position.x = BITE_COLLIDER_POSITION_X
-
-func chase_player():
-	if player:
-		navigation_agent.target_position = player.global_position
-		target_position = navigation_agent.get_next_path_position()
-		
-		if navigation_agent.is_navigation_finished():
-			if sprite.animation == "running":
-				sprite.play("idle")
-		else:
-			self.velocity = global_position.direction_to(target_position) * current_des
-			
-			sprite.play("running")
-			move_and_slide()
-		flip((target_position - self.position).normalized())
-
 func sprint_to_player():
-	if player != null:
-		var player_position = player.position
-		target_position = (player_position - position).normalized()
-		flip(target_position)
+	if is_instance_valid(player):
+		var player_position = player.global_position
+		if (player_position - self.global_position).normalized().x > 0:
+			flip(true)
+		else:
+			flip(false)
 		
 		sprite.play("running")
-		move_and_collide(target_position * sprint_multiplyer)
+		self.velocity = self.global_position.direction_to(player_position) * (current_des + sprint_multiplyer)
+		move_and_slide()
 
 func choose_atk():
 	var rng = randi_range(0,100)
@@ -150,7 +128,7 @@ func choose_atk():
 	else:
 		choosed_atk = Possible_Attacks.SPRINT
 
-	#choosed_atk = Possible_Attacks.IDLE
+	#choosed_atk = Possible_Attacks.SPRINT
 
 # -------- SIGNAL DIGEST -------- #
 
@@ -223,12 +201,6 @@ func _on_player_grab(is_been_grabbed, is_flipped, grab_position_marker):
 			sprite.rotation_degrees = 0;
 			healthbar.visible = true
 
-# METODO CHE TELETRASPORTA IL NODO NELLA POSIZIONE DEL PLAYER DURANTE LA GRAB #
-
-func is_grabbed():
-	flip((player.position - position).normalized())
-	position = grab_position.global_position
-
 #DIGEST DEL TIMER "Stun"
 	#setto il movimento a true
 
@@ -285,8 +257,8 @@ func bite():
 
 func sprint():
 	if is_instance_valid(player) and stun_timer.is_stopped() and not grabbed and not sprinting:
-		sprite.play("charging_sprint")
 		moving = false
+		sprite.play("charging_sprint")
 		sprint_charge_time.start()
 	sprint_cooldown.start()
 

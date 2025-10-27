@@ -24,7 +24,6 @@ signal launched_flashbang()
 
 var atk_state = Atk_States.IDLE
 
-var can_move = true
 var can_interact_with_something = false
 var grab_marker
 var grab_sender
@@ -113,7 +112,7 @@ func _physics_process(delta):
 		apply_knockback(delta)
 	if grabbed:
 		is_grabbed()
-	if can_move:
+	if moving:
 		move(delta)
 	if stun_timer.is_stopped() and not can_interact_with_something:
 		atk_handler()
@@ -196,7 +195,7 @@ func atk_handler():
 			animation_player.play("shake_ammo")
 	
 	elif Input.is_action_pressed("base_atk") and not "change" in sprite.animation and (sprite.animation == gun_prefix+"idle" or sprite.animation == gun_prefix+"running") and atk_anim_finished and not changing_gun and gun_bullet_count > 0:
-		can_move = false
+		moving = false
 		atk_anim_finished = false
 		atk_state = Atk_States.BASE_ATK
 		sprite.play(gun_prefix+"shooting")
@@ -211,7 +210,7 @@ func atk_handler():
 	#elif Input.is_action_just_pressed("evade") and ("idle" in sprite.animation or "running" in sprite.animation) and eva_cooldown.is_stopped():
 	elif Input.is_action_just_pressed("evade") and not ("damaged" in sprite.animation or "flashbang" in sprite.animation) and eva_cooldown.is_stopped():
 		eva_cooldown.start()
-		can_move = false
+		moving = false
 		shooting_delay_timer.stop()
 		reaction_timer.stop()
 		atk_state = Atk_States.EVA
@@ -220,7 +219,7 @@ func atk_handler():
 	
 	#elif Input.is_action_just_pressed("skill1") and ("idle" in sprite.animation or "running" in sprite.animation) and gun_prefix != "as_" and skill1_cooldown.is_stopped():
 	elif Input.is_action_just_pressed("skill1") and not ("damaged" in sprite.animation or "flashbang" in sprite.animation) and gun_prefix != "as_" and skill1_cooldown.is_stopped():
-		can_move = false
+		moving = false
 		atk_state = Atk_States.SK2
 		put_down_gun(gun_prefix)
 		gun_handler("assault")
@@ -233,7 +232,7 @@ func atk_handler():
 	
 	#elif Input.is_action_just_pressed("skill2") and ("idle" in sprite.animation or "running" in sprite.animation) and gun_prefix != "sh_" and skill2_cooldown.is_stopped():
 	elif Input.is_action_just_pressed("skill2") and not ("damaged" in sprite.animation or "flashbang" in sprite.animation) and gun_prefix != "sh_" and skill2_cooldown.is_stopped():
-		can_move = false
+		moving = false
 		atk_state = Atk_States.SK2
 		put_down_gun(gun_prefix)
 		gun_handler("shotgun")
@@ -298,7 +297,7 @@ func _on_sprite_2d_animation_finished():
 		set_idle()
 	
 	if "change" in sprite.animation and changing_gun:
-		can_move = false
+		moving = false
 		changing_gun = false
 		if ulti_duration_timer.is_stopped():
 			sprite.play(gun_prefix+"change")
@@ -331,7 +330,7 @@ func _on_effect_frame_changed():
 	pass
 
 func put_down_gun(prefix):
-	can_move = false
+	moving = false
 	changing_gun = true
 	reaction_timer.stop()
 	shooting_delay_timer.stop()
@@ -434,7 +433,7 @@ func set_idle():
 		control_node.rotation_degrees = 0
 		control_node.position.y = -53
 		
-		can_move = true
+		moving = true
 		atk_anim_finished = true
 		changing_gun = false
 		shooting_delay_timer.stop()
@@ -470,7 +469,7 @@ func _on_enemy_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, se
 		shooting_delay_timer.stop()
 		set_idle()
 		sprite.play(gun_prefix+"damaged")
-		can_move = false
+		moving = false
 		stun_timer.wait_time = stun_sec
 		stun_timer.start()
 
@@ -479,7 +478,7 @@ func _on_enemy_grab(is_been_grabbed, grab_position_marker, sender):
 		set_idle()
 		sprite.play(gun_prefix+"damaged")
 		
-		can_move = false
+		moving = false
 		grabbed = true
 		
 		self.set_collision_layer_value(1, false)

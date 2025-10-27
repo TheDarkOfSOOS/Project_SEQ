@@ -1,9 +1,9 @@
 extends Node2D
 
-var markers = [] # array che contiene tutti i marker della scena
-var active_markers = [] # array che si popola allo spawnare dei nemici
+var markers : Array = [] # array che contiene tutti i marker della scena
+var active_markers : Array = [] # array che si popola allo spawnare dei nemici
 # array contenente i percorsi dei nemici
-var possible_enemies = [
+var possible_enemies : Array = [
 	preload("res://scenes/enemies/zombie.tscn"),
 	preload("res://scenes/enemies/skeleton.tscn"),
 	preload("res://scenes/enemies/giant.tscn"),
@@ -46,7 +46,7 @@ var powerup_spawnable : bool = false
 var powerup_picked : bool = true
 var dramatic_flag : bool = false
 
-@onready var time_between_rounds = $Round_cooldown
+@onready var time_between_rounds : Timer = $Round_cooldown
 @onready var boss_spawner : Marker2D = $Boss_spawner
 
 func _ready():
@@ -61,11 +61,11 @@ func _process(_delta):
 	var boss_present = false
 	var powerup_present = false
 	for i in get_children():
-		if "Enemy" in i.name:
+		if i is Enemy:
 			fighting = true
-		if "Enemy" in i.name and is_boss_round():
+		if i is Boss and is_boss_round():
 			boss_present = true
-		if "Powerup" in i.name:
+		if i is Powerup_Pick:
 			powerup_present = true
 	
 	if boss_spawned and not boss_present:
@@ -163,8 +163,8 @@ func activate_markers():
 			#else: # altrimenti
 			out = true # seleziono il percorso
 		
-		add_child(enemy_scene.instantiate(),true) # insanzio come nodo figlio il nemico
-		#add_child(possible_enemies[randi_range(3, 3)].instantiate(),true) # debug
+		#add_child(enemy_scene.instantiate(),true) # insanzio come nodo figlio il nemico
+		add_child(possible_enemies[randi_range(0, 0)].instantiate(),true) # debug
 		
 		# setto la posizione del nemico spawnato al marker attivo
 		get_child(-1).position = i.position 

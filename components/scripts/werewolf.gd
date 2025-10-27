@@ -23,14 +23,12 @@ signal got_grabbed(is_grabbed)
 signal change_stats(stat, amount, time_duration, ally_sender)
 signal shake_camera(shake, strenght)
 
-var target_position
-
 enum Possible_Attacks {IDLE, CLAWS, HOWL, AGILITY}
 var choosed_atk
 
-@onready var navigation_agent = $NavigationAgent2D
-
-@onready var sprite = $Sprite2D
+var SPRITE_FLIP : bool
+var BODY_COLLIDER_X : float
+var CLAWS_COLLIDER_X : float
 
 @onready var body_collider = $Body_collider
 
@@ -59,6 +57,19 @@ func _ready():
 	var stats : Resource = load("res://components/resources/stats/werewolf_stats.tres")
 	load_stats(stats)
 	
+	SPRITE_FLIP = sprite.flip_h
+	BODY_COLLIDER_X = body_collider.position.x
+	CLAWS_COLLIDER_X = claws_collider.position.x
+	
+	sprites_to_flip = [
+		sprite, SPRITE_FLIP
+	]
+	
+	nodes_to_flip = [
+		body_collider, BODY_COLLIDER_X,
+		claws_collider, CLAWS_COLLIDER_X
+	]
+	
 	healthbar.max_value = default_vit
 	set_health_bar()
 	set_idle()
@@ -86,40 +97,6 @@ func _physics_process(delta):
 		set_idle()
 	elif not is_instance_valid(player) and moving:
 		sprite.play("idle")
-
-#METODO CHE PERMETTE AL NODO DI SPOSTARSI VERSO IL PLAYER
-#	salvo la posizione attuale del player
-#	creo il vettore che punta al player, facendo la posizione del player - la posizione attuale e infine normalizzo il vettore
-#	se il nodo è distante dal player di almeno 12 unità
-#		muovo il nodo verso il player con la velocità di 3
-func flip(distance_to_player):
-	if distance_to_player.x < 0:
-		body_collider.position.x = 4
-		claws_collider.position.x = -33
-		sprite.flip_h = true
-		if grabbed:
-			sprite.rotation_degrees = -90;
-	elif distance_to_player.x > 0:
-		body_collider.position.x = -4
-		claws_collider.position.x = 33
-		sprite.flip_h = false
-		if grabbed:
-			sprite.rotation_degrees = 90;
-
-func chase_player():
-	if player and not knockbacked:
-		navigation_agent.target_position = player.global_position
-		target_position = navigation_agent.get_next_path_position()
-		
-		if navigation_agent.is_navigation_finished():
-			if sprite.animation == "running":
-				sprite.play("idle")
-		else:
-			self.velocity = global_position.direction_to(target_position) * current_des
-			
-			sprite.play("running")
-			move_and_slide()
-		flip((target_position - self.position).normalized())
 
 func choose_atk():
 	var rng = randi_range(0,100)
