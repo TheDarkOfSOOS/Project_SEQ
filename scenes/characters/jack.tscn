@@ -10,13 +10,13 @@
 [ext_resource type="Texture2D" uid="uid://n5eeephddexo" path="res://components/sprites/jack/pistol/jack_shooting_p.png" id="5_ltcqf"]
 [ext_resource type="Texture2D" uid="uid://btjg1uvmks8gk" path="res://components/sprites/jack/pistol/jack_running_p.png" id="5_pnxoj"]
 [ext_resource type="Texture2D" uid="uid://iiwhblervbq4" path="res://components/sprites/jack/pistol/jack_change_p.png" id="6_ovxgh"]
+[ext_resource type="Shader" uid="uid://dpkjb3ox71vlx" path="res://sprite_shader.tres" id="6_oyqum"]
 [ext_resource type="Texture2D" uid="uid://b5n73bxvsflih" path="res://components/sprites/jack/assault/jack_change_as.png" id="6_p2m4j"]
 [ext_resource type="Texture2D" uid="uid://dswl0wwmaj82o" path="res://components/sprites/jack/assault/jack_shooting_as.png" id="7_4fjpq"]
 [ext_resource type="Texture2D" uid="uid://vgy3nolswcyb" path="res://components/sprites/jack/pistol/jack_p_reload.png" id="7_ndigt"]
 [ext_resource type="Texture2D" uid="uid://qud1xkse31d0" path="res://components/sprites/jack/assault/jack_damaged_as.png" id="8_b3qeh"]
 [ext_resource type="Texture2D" uid="uid://dvnwhqmbty7l8" path="res://components/sprites/jack/pistol/jack_flashbang_p.png" id="8_cjjla"]
 [ext_resource type="Texture2D" uid="uid://ceo426fi7fola" path="res://components/sprites/jack/assault/jack_flashbang_as.png" id="9_82o66"]
-[ext_resource type="Shader" uid="uid://c3ywoxg7w2n4d" path="res://components/shaders/hit_shader.gdshader" id="9_vakt5"]
 [ext_resource type="Texture2D" uid="uid://dyy88jjv1m7uy" path="res://components/sprites/jack/pistol/jack_p_running_reload.png" id="10_2n7ii"]
 [ext_resource type="Texture2D" uid="uid://d273e52sk4big" path="res://components/sprites/jack/assault/jack_idle_as.png" id="10_ei3rh"]
 [ext_resource type="Texture2D" uid="uid://ib2oxxketbvi" path="res://components/sprites/jack/assault/jack_running_as.png" id="11_5ay11"]
@@ -69,9 +69,7 @@ _data = {
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_7hw5y"]
 resource_local_to_scene = true
-shader = ExtResource("9_vakt5")
-shader_parameter/flash_color = Color(1, 1, 1, 1)
-shader_parameter/flash_value = 0.0
+shader = ExtResource("6_oyqum")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lguq2"]
 atlas = ExtResource("6_p2m4j")
@@ -1233,14 +1231,14 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [null]
+"values": [1.0]
 }
 
 [sub_resource type="Animation" id="Animation_mo7si"]
@@ -1250,14 +1248,14 @@ step = 0.01
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.06, 0.21),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [null, 1.0, null]
+"values": [1.0, 0.0, 1.0]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_50jq1"]
@@ -1332,6 +1330,7 @@ position = Vector2(1.11111, -55.5556)
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 material = SubResource("ShaderMaterial_7hw5y")
+instance_shader_parameters/flash_value = 1.0
 scale = Vector2(1.2, 1.2)
 sprite_frames = SubResource("SpriteFrames_dte57")
 animation = &"p_idle"

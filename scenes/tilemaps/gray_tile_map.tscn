@@ -1,4 +1,4 @@
-[gd_scene load_steps=67 format=4 uid="uid://bhsei62gvosxv"]
+[gd_scene load_steps=72 format=4 uid="uid://bhsei62gvosxv"]
 
 [ext_resource type="Texture2D" uid="uid://cs5jopxmileup" path="res://components/sprites/mainlevbuild.png" id="1_uhrny"]
 [ext_resource type="Texture2D" uid="uid://1myxeqojf4he" path="res://components/sprites/decorative.png" id="2_42pd3"]
@@ -8,14 +8,9 @@
 background_mode = 3
 background_color = Color(0.233925, 0.233925, 0.233925, 1)
 glow_enabled = true
-glow_intensity = 1.0
-glow_strength = 0.95
-glow_blend_mode = 0
-glow_hdr_threshold = 0.78
-fog_light_energy = 7.14
-fog_sun_scatter = 3.6
-fog_density = 0.6065
-adjustment_enabled = true
+glow_intensity = 0.2
+glow_strength = 1.31
+glow_blend_mode = 1
 adjustment_brightness = 0.74
 adjustment_saturation = 0.74
 
@@ -1832,6 +1827,32 @@ navigation_layer_0/layers = 1
 sources/1 = SubResource("TileSetAtlasSource_x50h8")
 sources/2 = SubResource("TileSetAtlasSource_gwla5")
 
+[sub_resource type="Gradient" id="Gradient_euj4w"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tx7nl"]
+gradient = SubResource("Gradient_euj4w")
+fill = 1
+fill_from = Vector2(1, 0)
+fill_to = Vector2(0.9982906, 0.0017094017)
+
+[sub_resource type="Gradient" id="Gradient_0q7ik"]
+offsets = PackedFloat32Array(0.0911765, 0.526471)
+colors = PackedColorArray(0.164706, 0, 0.439216, 0.635294, 0, 0, 0, 0.15)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_0q7ik"]
+noise_type = 0
+frequency = 0.0299
+offset = Vector3(283.86, -4.7, 0)
+domain_warp_type = 2
+domain_warp_amplitude = -9.3
+domain_warp_frequency = 0.035
+domain_warp_fractal_lacunarity = 6.455
+domain_warp_fractal_gain = 0.61
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_euj4w"]
+noise = SubResource("FastNoiseLite_0q7ik")
+color_ramp = SubResource("Gradient_0q7ik")
+
 [node name="BaseTileMap" type="Node2D"]
 process_mode = 1
 y_sort_enabled = true
@@ -1847,6 +1868,7 @@ tile_map_data = PackedByteArray("AADh//H/AQAuAA0AAADh//L/AQAuAA0AAADh//P/AQAuAA0
 tile_set = SubResource("TileSet_5xdkc")
 
 [node name="Ground_decorative" type="TileMapLayer" parent="."]
+light_mask = 3
 z_index = -1
 use_parent_material = true
 scale = Vector2(2, 2)
@@ -1855,6 +1877,7 @@ tile_set = SubResource("TileSet_5xdkc")
 navigation_enabled = false
 
 [node name="Walls" type="TileMapLayer" parent="."]
+light_mask = 3
 z_index = -1
 use_parent_material = true
 scale = Vector2(2, 2)
@@ -1862,15 +1885,17 @@ tile_map_data = PackedByteArray("AADf//D/AQAfAAQAAAAcABYAAQAiAAYAAADf/+r/AQAfAAI
 tile_set = SubResource("TileSet_5xdkc")
 
 [node name="Boundaries" type="StaticBody2D" parent="."]
+visible = false
 use_parent_material = true
 collision_layer = 4
 collision_mask = 7
-collision_priority = 1e+08
+collision_priority = 100000000.0
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Boundaries"]
 polygon = PackedVector2Array(1088, -704, 1089, 734, -1056, 736, -1057, -706, 1088, -704, 1064, -961, -1601, -960, -1601, 992, 1632, 992, 1632, -961, 1064, -961)
 
 [node name="Decorative" type="TileMapLayer" parent="."]
+light_mask = 3
 y_sort_enabled = true
 use_parent_material = true
 scale = Vector2(2, 2)
@@ -1916,5 +1941,20 @@ position = Vector2(-20, 461)
 position = Vector2(-452, 509)
 
 [node name="Boss_spawner" type="Marker2D" parent="Enemy_container"]
+
+[node name="Dark_light2D" type="PointLight2D" parent="."]
+position = Vector2(3, 7)
+scale = Vector2(53, 53)
+energy = 0.65
+blend_mode = 1
+range_item_cull_mask = 3
+texture = SubResource("GradientTexture2D_tx7nl")
+
+[node name="PointLight2D3" type="PointLight2D" parent="."]
+visible = false
+position = Vector2(-4.99997, 1)
+scale = Vector2(9, 12.9)
+energy = 8.47
+texture = SubResource("NoiseTexture2D_euj4w")
 
 [connection signal="timeout" from="Enemy_container/Round_cooldown" to="Enemy_container" method="_on_round_cooldown_timeout"]

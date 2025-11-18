@@ -29,6 +29,8 @@ color_ramp = SubResource("GradientTexture1D_0xvgb")
 [node name="GPUParticles2D" type="GPUParticles2D"]
 process_mode = 1
 modulate = Color(2.3, 2, 2, 1)
+light_mask = 0
+z_index = 5
 emitting = false
 amount = 20
 lifetime = 0.4

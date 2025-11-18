@@ -100,6 +100,7 @@ autoplay = "idle"
 
 [node name="GPUParticles2D" type="GPUParticles2D" parent="."]
 self_modulate = Color(2.5, 2.5, 2.5, 1)
+light_mask = 0
 z_index = 2
 emitting = false
 amount = 600

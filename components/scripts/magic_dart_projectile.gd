@@ -16,7 +16,8 @@ var magic_dart_force = 10
 var magic_dart_stun_force = 0.8
 @onready var atk_type = get_tree().get_first_node_in_group("gm").Attack_Types.PROJECTILE
 
-var magic_dart_velocity_multiplyer = 800
+@export var magic_dart_velocity_multiplyer : int = 800
+@export var time_to_live_duration : float = 6.0
 
 @onready var trail = $Line2D
 
@@ -28,6 +29,7 @@ signal take_dmg(str, atk_str, sec_stun, pbc, efc, sender)
 
 func _ready():
 	sprite.play("effect")
+	time_to_live.start(time_to_live_duration)
 	origin = global_position
 
 func _physics_process(_delta):

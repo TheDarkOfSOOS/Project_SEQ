@@ -78,10 +78,12 @@ _data = {
 }
 
 [node name="Hitmarker" type="Marker2D"]
+light_mask = 0
 z_index = 2
 
 [node name="Dmg_display" type="Label" parent="."]
 self_modulate = Color(1, 1, 1, 0)
+light_mask = 0
 z_index = 99
 anchors_preset = 8
 anchor_left = 0.5
@@ -106,6 +108,6 @@ vertical_alignment = 1
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
-"": SubResource("AnimationLibrary_dsxfs")
+&"": SubResource("AnimationLibrary_dsxfs")
 }
 autoplay = "popup"

@@ -1,6 +1,7 @@
 [gd_scene load_steps=70 format=3 uid="uid://dlv5xy3f7qvmt"]
 
 [ext_resource type="Script" uid="uid://dq1jg0a0tecit" path="res://components/scripts/fae.gd" id="1_4p6sl"]
+[ext_resource type="Shader" uid="uid://dpkjb3ox71vlx" path="res://sprite_shader.tres" id="4_8wjy2"]
 [ext_resource type="Texture2D" uid="uid://cy8ryt31bnfjr" path="res://components/sprites/enemies/fae/fae_charging_heal.png" id="4_gm88b"]
 [ext_resource type="PackedScene" uid="uid://uy8eytrdfgkh" path="res://scenes/enemies/projectiles/magic_dart_projectile.tscn" id="4_no4bh"]
 [ext_resource type="Texture2D" uid="uid://b6pp4ile5xf28" path="res://components/sprites/enemies/fae/fae_damaged.png" id="4_sjwns"]
@@ -8,7 +9,6 @@
 [ext_resource type="Texture2D" uid="uid://biqmbnmpa1vxs" path="res://components/sprites/GUI/status_alert/buff_animation.png" id="5_ugwkk"]
 [ext_resource type="Texture2D" uid="uid://dg0w8hqiqnmr1" path="res://components/sprites/enemies/fae/fae_idle.png" id="5_x4mc4"]
 [ext_resource type="Texture2D" uid="uid://c8p0lhwkai63t" path="res://components/sprites/enemies/fae/fae_heal.png" id="6_6ydg4"]
-[ext_resource type="Shader" uid="uid://c3ywoxg7w2n4d" path="res://components/shaders/hit_shader.gdshader" id="6_mhkqy"]
 [ext_resource type="Texture2D" uid="uid://yj001hpf0hy8" path="res://components/sprites/enemies/fae/fae_running.png" id="6_q6t8n"]
 [ext_resource type="Texture2D" uid="uid://cixwjw2tvf78u" path="res://components/sprites/GUI/status_alert/debuff_animation.png" id="6_qixfm"]
 [ext_resource type="Texture2D" uid="uid://da0dj4l15d4d5" path="res://components/sprites/GUI/status_alert/recover_animation.png" id="7_x3kmy"]
@@ -16,9 +16,7 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ml2dn"]
 resource_local_to_scene = true
-shader = ExtResource("6_mhkqy")
-shader_parameter/flash_color = Color(1, 1, 1, 1)
-shader_parameter/flash_value = 0.0
+shader = ExtResource("4_8wjy2")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ny0h4"]
 atlas = ExtResource("4_gm88b")
@@ -438,42 +436,40 @@ bg_color = Color(1, 0, 0.0352941, 1)
 radius = 14.506
 height = 54.1527
 
-[sub_resource type="Animation" id="Animation_6bd6i"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [null]
-}
-
-[sub_resource type="Animation" id="Animation_mo7si"]
+[sub_resource type="Animation" id="Animation_7acwb"]
 resource_name = "hit_flash"
-length = 0.8
-step = 0.01
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
+tracks/0/path = NodePath("FaeEnemy/Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.06, 0.21),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [null, 1.0, null]
+"values": [1.0, 0.0, 1.0]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_50jq1"]
+[sub_resource type="Animation" id="Animation_f616q"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("FaeEnemy/Sprite2D:instance_shader_parameters/flash_value")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_k3shd"]
 _data = {
-&"RESET": SubResource("Animation_6bd6i"),
-&"hit_flash": SubResource("Animation_mo7si")
+&"RESET": SubResource("Animation_f616q"),
+&"hit_flash": SubResource("Animation_7acwb")
 }
 
 [node name="FaeEnemy" type="CharacterBody2D"]
@@ -493,6 +489,7 @@ position = Vector2(0, -64)
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 y_sort_enabled = true
 material = SubResource("ShaderMaterial_ml2dn")
+instance_shader_parameters/flash_value = 1.0
 position = Vector2(2.00001, -0.999992)
 scale = Vector2(1.5, 1.5)
 sprite_frames = SubResource("SpriteFrames_7kgit")
@@ -509,6 +506,7 @@ animation = &"idle"
 autoplay = "idle"
 
 [node name="UI_container" type="VBoxContainer" parent="."]
+z_index = 1
 custom_minimum_size = Vector2(98, 10)
 anchors_preset = 8
 anchor_left = 0.5
@@ -604,10 +602,10 @@ max_neighbors = 20
 max_speed = 1703.04
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
+root_node = NodePath("../..")
 libraries = {
-&"": SubResource("AnimationLibrary_50jq1")
+&"": SubResource("AnimationLibrary_k3shd")
 }
-autoplay = "RESET"
 
 [connection signal="animation_finished" from="Sprite2D" to="." method="_on_sprite_2d_animation_finished"]
 [connection signal="frame_changed" from="Sprite2D" to="." method="_on_sprite_2d_frame_changed"]

@@ -1,17 +1,17 @@
 class_name Player_GUI extends Control
 
-var player
+var player : Player
 
 @onready var skill1_cooldown_time = $GridContainer/Control/Skill1_cooldown
 @onready var skill2_cooldown_time = $GridContainer/Control/Skill2_cooldown
 @onready var eva_cooldown_time = $GridContainer/Control/Eva_cooldown
 @onready var ulti_cooldown_time = $GridContainer/Control/Ulti_cooldown
 
-@onready var healthbar = $MarginContainer/PanelContainer/Control/Health_bar
+@onready var healthbar : ProgressBar = $MarginContainer/PanelContainer/Control/Health_bar
 @onready var healthbar_label = $MarginContainer/PanelContainer/Control/Health_bar/Health_label
 
 @onready var animation_player = $AnimationPlayer
-var max_health
+var max_health : int
 
 signal player_death()
 
@@ -19,7 +19,9 @@ var alive = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	healthbar.max_value = max_health
+	healthbar.value = player.current_vit
+	healthbar_label.text = str(player.default_vit) + "/" + str(player.default_vit)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):

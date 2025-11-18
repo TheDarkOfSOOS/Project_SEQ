@@ -1,7 +1,12 @@
-[gd_scene load_steps=9 format=3 uid="uid://bcsnkyl6md51i"]
+[gd_scene load_steps=12 format=3 uid="uid://bcsnkyl6md51i"]
 
 [ext_resource type="Script" uid="uid://dbkp3pts3rwp7" path="res://components/scripts/enchantment_projectile.gd" id="1_tncp7"]
+[ext_resource type="Shader" uid="uid://dpkjb3ox71vlx" path="res://sprite_shader.tres" id="2_a1isf"]
 [ext_resource type="Texture2D" uid="uid://bl0aj070oadal" path="res://components/sprites/enemies/fae/fae_enchantment_projectile.png" id="2_m7cc0"]
+[ext_resource type="Texture2D" uid="uid://cbck0w068ejki" path="res://components/sprites/light_test2.png" id="3_8vcln"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2n8u6"]
+shader = ExtResource("2_a1isf")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4s87d"]
 atlas = ExtResource("2_m7cc0")
@@ -42,13 +47,21 @@ height = 20.0
 
 [node name="Enchantment_dart_projectile" type="CharacterBody2D"]
 process_mode = 1
+light_mask = 0
 collision_layer = 2
 collision_mask = 5
 motion_mode = 1
 script = ExtResource("1_tncp7")
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
+light_mask = 0
 z_index = 1
+material = SubResource("ShaderMaterial_2n8u6")
+instance_shader_parameters/FloatParameter = 0.0010000000475
+instance_shader_parameters/GlowColor = Color(1.297842, 1.297842, 1.297842, 1)
+instance_shader_parameters/MaskColor = Color(1, 0.4, 0.7411765, 1)
+instance_shader_parameters/flash_color = Color(1, 1, 1, 1)
+instance_shader_parameters/flash_value = 1.0
 scale = Vector2(1.5, 1.5)
 sprite_frames = SubResource("SpriteFrames_1ubdb")
 animation = &"effect"
@@ -56,6 +69,7 @@ autoplay = "idle"
 
 [node name="Line2D" type="Line2D" parent="."]
 top_level = true
+light_mask = 0
 width = 18.0
 width_curve = SubResource("Curve_m6y42")
 default_color = Color(1, 0, 0.443137, 1)
@@ -72,7 +86,6 @@ disabled = true
 [node name="Time_to_live" type="Timer" parent="."]
 wait_time = 6.0
 one_shot = true
-autostart = true
 
 [node name="Area_to_impact" type="Area2D" parent="."]
 collision_layer = 2
@@ -83,6 +96,12 @@ z_index = 1
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_7nfri")
 debug_color = Color(0.862745, 0.133333, 0.133333, 0.0666667)
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+scale = Vector2(3.26563, 3.26563)
+color = Color(0.88511, 0.000284356, 0.798555, 1)
+energy = 1.5
+texture = ExtResource("3_8vcln")
 
 [connection signal="timeout" from="Time_to_live" to="." method="_on_time_to_live_timeout"]
 [connection signal="body_entered" from="Area_to_impact" to="." method="_on_area_to_impact_body_entered"]

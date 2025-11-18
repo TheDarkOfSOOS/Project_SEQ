@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://phhqwdl271xg" path="res://components/scripts/skeleton.gd" id="1_ug4iq"]
 [ext_resource type="Texture2D" uid="uid://c7ypq8f8wdvlu" path="res://components/sprites/enemies/skeleton/skeleton_atk.png" id="2_lkymh"]
+[ext_resource type="Shader" uid="uid://dpkjb3ox71vlx" path="res://sprite_shader.tres" id="2_vnbgq"]
 [ext_resource type="Texture2D" uid="uid://5sc13wn7j33m" path="res://components/sprites/enemies/skeleton/skeleton_damaged.png" id="3_spfhf"]
-[ext_resource type="Shader" uid="uid://c3ywoxg7w2n4d" path="res://components/shaders/hit_shader.gdshader" id="4_gqfqc"]
 [ext_resource type="Texture2D" uid="uid://c12bybbikpkaw" path="res://components/sprites/enemies/skeleton/skeleton_dying.png" id="4_pey7m"]
 [ext_resource type="Texture2D" uid="uid://bsk3u3mw8jwhn" path="res://components/sprites/enemies/skeleton/skeleton_idle.png" id="5_hg8k2"]
 [ext_resource type="Texture2D" uid="uid://cev2rer2h8s10" path="res://components/sprites/enemies/skeleton/skeleton_parry.png" id="6_mhwow"]
@@ -17,9 +17,7 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b8fga"]
 resource_local_to_scene = true
-shader = ExtResource("4_gqfqc")
-shader_parameter/flash_color = Color(1, 1, 1, 1)
-shader_parameter/flash_value = 0.0
+shader = ExtResource("2_vnbgq")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xk3h6"]
 atlas = ExtResource("2_lkymh")
@@ -563,42 +561,40 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="Animation" id="Animation_6bd6i"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [null]
-}
-
-[sub_resource type="Animation" id="Animation_mo7si"]
+[sub_resource type="Animation" id="Animation_vnbgq"]
 resource_name = "hit_flash"
-length = 0.8
-step = 0.01
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
+tracks/0/path = NodePath("SkeletonEnemy/Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.06, 0.21),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [null, 1.0, null]
+"values": [1.0, 0.0, 1.0]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_50jq1"]
+[sub_resource type="Animation" id="Animation_f0dbl"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SkeletonEnemy/Sprite2D:instance_shader_parameters/flash_value")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_s01nw"]
 _data = {
-&"RESET": SubResource("Animation_6bd6i"),
-&"hit_flash": SubResource("Animation_mo7si")
+&"RESET": SubResource("Animation_f0dbl"),
+&"hit_flash": SubResource("Animation_vnbgq")
 }
 
 [node name="SkeletonEnemy" type="CharacterBody2D"]
@@ -616,6 +612,7 @@ position = Vector2(0, -55)
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 y_sort_enabled = true
 material = SubResource("ShaderMaterial_b8fga")
+instance_shader_parameters/flash_value = 1.0
 position = Vector2(7.15256e-07, 3)
 scale = Vector2(0.128125, 0.128125)
 sprite_frames = SubResource("SpriteFrames_7kgit")
@@ -632,6 +629,7 @@ animation = &"idle"
 autoplay = "idle"
 
 [node name="UI_container" type="VBoxContainer" parent="."]
+z_index = 1
 custom_minimum_size = Vector2(98, 10)
 anchors_preset = 8
 anchor_left = 0.5
@@ -736,10 +734,10 @@ max_neighbors = 20
 max_speed = 1703.04
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
+root_node = NodePath("../..")
 libraries = {
-&"": SubResource("AnimationLibrary_50jq1")
+&"": SubResource("AnimationLibrary_s01nw")
 }
-autoplay = "RESET"
 
 [connection signal="animation_finished" from="Sprite2D" to="." method="_on_sprite_2d_animation_finished"]
 [connection signal="animation_finished" from="Status_alert_sprite" to="." method="_on_status_alert_sprite_animation_finished"]

@@ -63,7 +63,7 @@ script = ExtResource("3_pywgm")
 
 [node name="GameOver_container" type="MarginContainer" parent="CanvasLayer/GUI"]
 visible = false
-layout_mode = 2
+layout_mode = 0
 offset_left = 15.0
 offset_top = 135.0
 offset_right = 1904.0

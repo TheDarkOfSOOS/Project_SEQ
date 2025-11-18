@@ -72,6 +72,7 @@ radius = 17.0
 height = 50.0
 
 [node name="JackWander" type="CharacterBody2D"]
+collision_mask = 4
 motion_mode = 1
 slide_on_ceiling = false
 script = ExtResource("1_fr2sc")

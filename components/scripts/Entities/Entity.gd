@@ -37,6 +37,7 @@ var nodes_to_flip_rotation : Array
 const hitmarker_scene : PackedScene = preload("res://scenes/miscellaneous/hitmarker.tscn")
 const hit_particles_scene : PackedScene = preload("res://scenes/miscellaneous/hit_particles.tscn")
 const status_icon : PackedScene = preload("res://scenes/miscellaneous/status_icon.tscn")
+
 @onready var status_sprite : AnimatedSprite2D = $Status_alert_sprite
 @onready var stun_timer : Timer = $Stun
 

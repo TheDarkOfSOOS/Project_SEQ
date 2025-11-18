@@ -40,6 +40,7 @@ func _on_boss_set_healthbar(vit):
 		boss.stun_timer.stop()
 		dramatic_slow_motion(0.15, 3)
 		animation_player.play("delete_boss_bar")
+		boss.sprite.reparent(boss.get_parent())
 		if QuestManager.quests["the_bigger_they_are"].status == QuestStatus.of_type.started:
 			QuestManager.quests["the_bigger_they_are"].reach_goal_quest()
 	if vit > max_health:

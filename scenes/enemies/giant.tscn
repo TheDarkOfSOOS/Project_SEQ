@@ -1,9 +1,9 @@
-[gd_scene load_steps=94 format=3 uid="uid://dbw1in01yk45v"]
+[gd_scene load_steps=96 format=3 uid="uid://dbw1in01yk45v"]
 
 [ext_resource type="Script" uid="uid://bkw6kj23vnf4t" path="res://components/scripts/giant.gd" id="1_t850f"]
+[ext_resource type="Shader" uid="uid://dpkjb3ox71vlx" path="res://sprite_shader.tres" id="2_m3xf6"]
 [ext_resource type="Texture2D" uid="uid://bese26q4y7aob" path="res://components/sprites/enemies/giant/giant_damaged.png" id="2_ywefj"]
 [ext_resource type="Texture2D" uid="uid://6geg8uhgs2nf" path="res://components/sprites/enemies/giant/giant_earthquake.png" id="3_7ybuo"]
-[ext_resource type="Shader" uid="uid://c3ywoxg7w2n4d" path="res://components/shaders/hit_shader.gdshader" id="4_1h7bm"]
 [ext_resource type="Texture2D" uid="uid://giovoho8320j" path="res://components/sprites/enemies/giant/giant_idle.png" id="4_sulq3"]
 [ext_resource type="Texture2D" uid="uid://ddi3d0ttnx3bh" path="res://components/sprites/enemies/giant/giant_punch.png" id="5_6e14y"]
 [ext_resource type="Texture2D" uid="uid://c4lwn8v072d0w" path="res://components/sprites/enemies/giant/gigant_running.png" id="6_0gd1w"]
@@ -15,9 +15,7 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_kb1pu"]
 resource_local_to_scene = true
-shader = ExtResource("4_1h7bm")
-shader_parameter/flash_color = Color(1, 1, 1, 1)
-shader_parameter/flash_value = 0.0
+shader = ExtResource("2_m3xf6")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_bfdp6"]
 atlas = ExtResource("2_ywefj")
@@ -670,43 +668,51 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="Animation" id="Animation_6bd6i"]
+[sub_resource type="Animation" id="Animation_65mtx"]
 length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
+tracks/0/path = NodePath("GiantEnemy/Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [null]
+"values": [1.0]
 }
 
-[sub_resource type="Animation" id="Animation_mo7si"]
+[sub_resource type="Animation" id="Animation_51mck"]
 resource_name = "hit_flash"
-length = 0.8
-step = 0.01
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
+tracks/0/path = NodePath("GiantEnemy/Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.06, 0.21),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [null, 1.0, null]
+"values": [1.0, 0.0, 1.0]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_50jq1"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_h1vit"]
 _data = {
-&"RESET": SubResource("Animation_6bd6i"),
-&"hit_flash": SubResource("Animation_mo7si")
+&"RESET": SubResource("Animation_65mtx"),
+&"hit_flash": SubResource("Animation_51mck")
 }
+
+[sub_resource type="Gradient" id="Gradient_8y0m8"]
+offsets = PackedFloat32Array(0, 0.638806)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_m3xf6"]
+gradient = SubResource("Gradient_8y0m8")
+use_hdr = true
+fill = 1
+fill_from = Vector2(0.52649575, 0.4940171)
 
 [node name="GiantEnemy" type="CharacterBody2D"]
 process_mode = 1
@@ -725,13 +731,20 @@ scale = Vector2(1.43977, 1.43977)
 editor_description = "sposta di 40 px lo sprite"
 y_sort_enabled = true
 material = SubResource("ShaderMaterial_kb1pu")
-position = Vector2(-13.2426, -29.2426)
+instance_shader_parameters/FloatParameter = 0.0070000003325
+instance_shader_parameters/GlowColor = Color(0, 1.353256, 0, 1)
+instance_shader_parameters/MaskColor = Color(0.45918357, 0.95532125, 0.31405702, 1)
+instance_shader_parameters/flash_value = 1.0
+position = Vector2(-11, 70)
 scale = Vector2(0.413215, 0.413215)
 sprite_frames = SubResource("SpriteFrames_7kgit")
 animation = &"idle"
 autoplay = "idle"
+offset = Vector2(0, -211)
 
 [node name="Status_alert_sprite" type="AnimatedSprite2D" parent="."]
+self_modulate = Color(1.93715, 1.93715, 1.93715, 1)
+light_mask = 0
 z_index = 1
 y_sort_enabled = true
 position = Vector2(-13.2426, 5.7324)
@@ -741,6 +754,8 @@ animation = &"idle"
 autoplay = "idle"
 
 [node name="Body_collider" type="CollisionShape2D" parent="."]
+visible = false
+z_index = 1
 position = Vector2(-2.2426, 29.7574)
 rotation = 1.5708
 scale = Vector2(1.43977, 1.43977)
@@ -752,6 +767,8 @@ wait_time = 3.0
 one_shot = true
 
 [node name="UI_container" type="VBoxContainer" parent="."]
+light_mask = 0
+z_index = 1
 custom_minimum_size = Vector2(98, 10)
 anchors_preset = 8
 anchor_left = 0.5
@@ -809,7 +826,7 @@ z_index = 1
 position = Vector2(59, 0)
 scale = Vector2(0.279167, 0.279167)
 sprite_frames = SubResource("SpriteFrames_rxp4i")
-animation = &"effect"
+animation = &"idle"
 autoplay = "idle"
 
 [node name="Earthquake_Area" type="Area2D" parent="."]
@@ -864,10 +881,17 @@ max_neighbors = 20
 max_speed = 1703.04
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
+root_node = NodePath("../..")
 libraries = {
-&"": SubResource("AnimationLibrary_50jq1")
+&"": SubResource("AnimationLibrary_h1vit")
 }
-autoplay = "RESET"
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+light_mask = 2
+scale = Vector2(9.158175, 9.158175)
+color = Color(0.34795073, 0.6786201, 1.92523e-07, 1)
+energy = 1.07
+texture = SubResource("GradientTexture2D_m3xf6")
 
 [connection signal="animation_finished" from="Sprite2D" to="." method="_on_sprite_2d_animation_finished"]
 [connection signal="frame_changed" from="Sprite2D" to="." method="_on_sprite_2d_frame_changed"]

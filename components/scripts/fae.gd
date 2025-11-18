@@ -108,7 +108,7 @@ func choose_atk():
 	else:
 		choosed_atk = Possible_Attacks.HEAL
 	
-	choosed_atk = Possible_Attacks.HEAL
+	#choosed_atk = Possible_Attacks.HEAL
 
 #DIGEST DEL SEGNALE DEL PLAYER "take_dmg"
 #{
@@ -145,6 +145,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 				flee_timeout_timer.start()
 				sprite.play("damaged")
 				self.set_collision_layer_value(2, false)
+				self.set_collision_mask_value(1, false)
 			else:
 				moving = false
 				heal_charge_time.stop()
@@ -299,6 +300,8 @@ func set_idle():
 		moving = true
 		choosed_atk = Possible_Attacks.IDLE
 		sprite.play("idle")
+		self.set_collision_layer_value(2, true)
+		self.set_collision_mask_value(3, true)
 		heal_charge_time.stop()
 		flee_timeout_timer.stop()
 		update_atk_timer.start()

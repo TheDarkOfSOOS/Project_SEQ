@@ -11,6 +11,7 @@ var possible_enemies : Array = [
 	preload("res://scenes/enemies/fae.tscn"),
 	preload("res://scenes/enemies/centaur.tscn")
 	]
+
 # [0] = Zombie
 # [1] = Scheletro
 # [2] = Gigante
@@ -163,19 +164,21 @@ func activate_markers():
 			#else: # altrimenti
 			out = true # seleziono il percorso
 		
-		#add_child(enemy_scene.instantiate(),true) # insanzio come nodo figlio il nemico
-		add_child(possible_enemies[randi_range(0, 0)].instantiate(),true) # debug
+		var new_enemy = enemy_scene.instantiate()
+		new_enemy = possible_enemies[randi_range(2,2)].instantiate() # debug
 		
 		# setto la posizione del nemico spawnato al marker attivo
-		get_child(-1).position = i.position 
+		new_enemy.global_position = i.position 
+		
+		add_child(new_enemy,true) # insanzio come nodo figlio il nemico
 
 # METODO CHE SPAWNA IL BOSS
 func spawn_boss():
-	add_child(boss_scene.instantiate(),true) # instanzio come nodo figlio il boss
-	var active_boss = get_child(get_child_count()-1) # salvo il nodo del boss come variabile
-	active_boss.position = boss_spawner.position # metto la posizione del boss nel suo marker
+	var new_boss = boss_scene.instantiate()
+	new_boss.global_position = boss_spawner.position # metto la posizione del boss nel suo marker
+	add_child(new_boss,true) # instanzio come nodo figlio il boss
 	# segnalo alla round_gui che il boss è spawnato e glielo passo
-	emit_signal("connect_boss_with_GUI", active_boss) 
+	emit_signal("connect_boss_with_GUI", new_boss) 
 
 # METODO CHE CONTROLLA SE E' IL ROUND IN CUI DEVE SPAWNARE IL BOSS
 func is_boss_round():

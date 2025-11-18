@@ -7,6 +7,7 @@ enum Atk_States {IDLE, BASE_ATK, SK1, SK2, EVA, ULT}
 signal is_in_atk_range(is_in, body)
 signal take_dmg(str, atk_str, sec_stun, pbc, efc, type, sender)
 signal set_health_bar(current_vit)
+@warning_ignore("unused_signal")
 signal get_healed(amount)
 signal change_stats(stat, amount, time_duration, ally_sender)
 signal inflict_knockback(amount, force, sender)
@@ -47,7 +48,7 @@ var ult_moving_mod
 @export var evade_stun_time = 2.1
 @onready var evade_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
 
-@export var skill1_force = 20
+@export var skill1_force = 12
 @export var skill1_stun_time = 0.6
 @onready var skill1_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
 
@@ -93,7 +94,10 @@ var ult_moving_mod
 
 @onready var combo_time : Timer = $Combo_time
 
-var skill2_cooldown_duration = 2
+var eva_cooldown_duration : float = 5.0
+var skill1_cooldown_duration : float = 8.0
+var skill2_cooldown_duration : float = 9.0
+var ulti_cooldown_duration : float = 60.0
 
 #METODO CHE VIENE CHIAMATO AD OGNI FRAME
 	#se il player si può muovere
@@ -116,7 +120,10 @@ func _ready():
 	
 	
 	
+	eva_cooldown.wait_time = eva_cooldown_duration
+	skill1_cooldown.wait_time = skill1_cooldown_duration
 	skill2_cooldown.wait_time = skill2_cooldown_duration
+	ulti_cooldown.wait_time = ulti_cooldown_duration
 	
 	emit_signal("set_health_bar", default_vit)
 
@@ -325,7 +332,7 @@ func _on_ult_area_body_exited(body):
 
 
 
-
+@warning_ignore("shadowed_variable_base_class")
 func flip_sprite(flip):
 	if flip:
 		sprite.flip_h = true
@@ -424,7 +431,7 @@ func ult_moving():
 	else:
 		sprite.position.x += 0.10
 	if sprite.position.y == initial_y_position-MAX_Y_POSITION:
-		sprite.frame += 1.5
+		sprite.frame += 1
 		ult_moving_mod = 9
 	if sprite.position.y == initial_y_position:
 		is_moving_ult = false

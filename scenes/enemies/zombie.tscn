@@ -1,7 +1,7 @@
 [gd_scene load_steps=78 format=3 uid="uid://d2wge2miret0o"]
 
 [ext_resource type="Script" uid="uid://br8ws5a8se0ge" path="res://components/scripts/zombie.gd" id="1_4dl1i"]
-[ext_resource type="Shader" uid="uid://c3ywoxg7w2n4d" path="res://components/shaders/hit_shader.gdshader" id="1_p876d"]
+[ext_resource type="Shader" uid="uid://dpkjb3ox71vlx" path="res://sprite_shader.tres" id="1_xb2l8"]
 [ext_resource type="Texture2D" uid="uid://dcsagcmr7wx6a" path="res://components/sprites/enemies/zombie/zombie_attack.png" id="3_msf8r"]
 [ext_resource type="Texture2D" uid="uid://delgxc8luy00p" path="res://components/sprites/enemies/zombie/zombie_charging_sprint.png" id="4_0w33q"]
 [ext_resource type="Texture2D" uid="uid://c3ns4y7uooyhj" path="res://components/sprites/enemies/zombie/zombie_damaged.png" id="5_022jm"]
@@ -13,15 +13,11 @@
 [ext_resource type="Texture2D" uid="uid://cpontr05v0kat" path="res://components/sprites/default_atk.png" id="11_hpvul"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_l2j2q"]
-shader = ExtResource("1_p876d")
-shader_parameter/flash_color = Color(0, 0, 0, 1)
-shader_parameter/flash_value = 0.0
+shader = ExtResource("1_xb2l8")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wops7"]
 resource_local_to_scene = true
-shader = ExtResource("1_p876d")
-shader_parameter/flash_color = Color(1, 1, 1, 1)
-shader_parameter/flash_value = 0.0
+shader = ExtResource("1_xb2l8")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_p6vvj"]
 atlas = ExtResource("3_msf8r")
@@ -489,42 +485,40 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fhhjd"]
 size = Vector2(106, 137.5)
 
-[sub_resource type="Animation" id="Animation_6bd6i"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [null]
-}
-
-[sub_resource type="Animation" id="Animation_mo7si"]
+[sub_resource type="Animation" id="Animation_i1x1v"]
 resource_name = "hit_flash"
-length = 0.8
-step = 0.01
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.06, 0.21),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [null, 1.0, null]
+"values": [1.0, 0.0, 1.0]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_50jq1"]
+[sub_resource type="Animation" id="Animation_p8lyb"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_crlcg"]
 _data = {
-&"RESET": SubResource("Animation_6bd6i"),
-&"hit_flash": SubResource("Animation_mo7si")
+&"RESET": SubResource("Animation_p8lyb"),
+&"hit_flash": SubResource("Animation_i1x1v")
 }
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_i1x1v"]
@@ -546,6 +540,7 @@ position = Vector2(0, -45)
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 y_sort_enabled = true
 material = SubResource("ShaderMaterial_wops7")
+instance_shader_parameters/flash_value = 1.0
 position = Vector2(2.00001, -0.999992)
 scale = Vector2(0.139583, 0.139583)
 sprite_frames = SubResource("SpriteFrames_7kgit")
@@ -568,6 +563,7 @@ shape = SubResource("CapsuleShape2D_7foa3")
 debug_color = Color(1, 1, 0, 0.0666667)
 
 [node name="UI_container" type="VBoxContainer" parent="."]
+z_index = 1
 custom_minimum_size = Vector2(98, 10)
 anchors_preset = 8
 anchor_left = 0.5
@@ -612,12 +608,12 @@ collision_layer = 2
 collision_mask = 5
 
 [node name="Collider" type="CollisionShape2D" parent="Bite_Area"]
+visible = false
 position = Vector2(34, 16.5)
 shape = SubResource("RectangleShape2D_kr4ka")
 debug_color = Color(1, 0.00392157, 0.0666667, 0.109804)
 
 [node name="Effect" type="AnimatedSprite2D" parent="Bite_Area"]
-visible = false
 position = Vector2(49, 12)
 scale = Vector2(0.0875, 0.133333)
 sprite_frames = SubResource("SpriteFrames_g7j7j")
@@ -663,11 +659,10 @@ navigation_layers = 3
 path_postprocessing = 1
 simplify_epsilon = 1.213
 max_neighbors = 20
-debug_enabled = true
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
 libraries = {
-&"": SubResource("AnimationLibrary_50jq1")
+&"": SubResource("AnimationLibrary_crlcg")
 }
 
 [node name="Area2D" type="Area2D" parent="."]

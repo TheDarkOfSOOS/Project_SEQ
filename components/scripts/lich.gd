@@ -232,8 +232,7 @@ func _on_sprite_2d_animation_finished():
 		sprite.play("idle")
 		spawning = false
 	elif sprite.animation == "death":
-		self.name = "Slayed"
-		process_mode = Node.PROCESS_MODE_DISABLED
+		queue_free()
 	elif sprite.animation == "witchcraft":
 		set_idle()
 	elif sprite.animation == "death_sphere":

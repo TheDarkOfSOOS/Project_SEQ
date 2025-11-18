@@ -1,9 +1,8 @@
-[gd_scene load_steps=156 format=3 uid="uid://cdj6vi8f58cl0"]
+[gd_scene load_steps=159 format=3 uid="uid://cdj6vi8f58cl0"]
 
 [ext_resource type="Script" uid="uid://cqmhu2e8k4wws" path="res://components/scripts/tyrone.gd" id="1_kqagk"]
 [ext_resource type="Texture2D" uid="uid://b2uag3j6vt8fm" path="res://components/sprites/rufus/Rufus_base_atk1.png" id="2_qcuyf"]
 [ext_resource type="Texture2D" uid="uid://g2nafuf0dsep" path="res://components/sprites/rufus/Rufus_running.png" id="3_460on"]
-[ext_resource type="Shader" uid="uid://c3ywoxg7w2n4d" path="res://components/shaders/hit_shader.gdshader" id="4_3dgml"]
 [ext_resource type="Texture2D" uid="uid://cd5lkvnepjij0" path="res://components/sprites/rufus/Rufus_base_atk2.png" id="4_br4vc"]
 [ext_resource type="Texture2D" uid="uid://b7lbtj3r3lhc0" path="res://components/sprites/rufus/Rufus_base_atk3.png" id="5_v1jqm"]
 [ext_resource type="Texture2D" uid="uid://c0jj0khgkwyfn" path="res://components/sprites/rufus/Rufus_base_atk4.png" id="6_o4qfo"]
@@ -20,6 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://cixwjw2tvf78u" path="res://components/sprites/GUI/status_alert/debuff_animation.png" id="15_12i5i"]
 [ext_resource type="Texture2D" uid="uid://da0dj4l15d4d5" path="res://components/sprites/GUI/status_alert/recover_animation.png" id="16_1jbt6"]
 [ext_resource type="Texture2D" uid="uid://civne652306iv" path="res://components/sprites/rufus/HD_sprites/Rufus_ult_eff_HD.png" id="16_kk0ut"]
+[ext_resource type="Shader" uid="uid://dpkjb3ox71vlx" path="res://sprite_shader.tres" id="20_odml0"]
 
 [sub_resource type="Shader" id="Shader_0ux1b"]
 code = "shader_type canvas_item;
@@ -54,10 +54,8 @@ void fragment() {
 shader = SubResource("Shader_0ux1b")
 shader_parameter/look_right = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_3ojpq"]
-shader = ExtResource("4_3dgml")
-shader_parameter/flash_color = Color(1, 1, 1, 1)
-shader_parameter/flash_value = 0.0
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8y0m8"]
+shader = ExtResource("20_odml0")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5ua4g"]
 atlas = ExtResource("2_qcuyf")
@@ -703,7 +701,7 @@ region = Rect2(0, 3520, 1248, 1760)
 atlas = ExtResource("16_1jbt6")
 region = Rect2(1248, 3520, 1248, 1760)
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_biutr"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_odml0"]
 animations = [{
 "frames": [{
 "duration": 1.0,
@@ -988,6 +986,9 @@ height = 198.0
 radius = 16.0
 height = 114.233
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1v0nq"]
+shader = ExtResource("20_odml0")
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_fosrk"]
 atlas = ExtResource("16_kk0ut")
 region = Rect2(0, 0, 300, 300)
@@ -1052,43 +1053,51 @@ animations = [{
 [sub_resource type="CircleShape2D" id="CircleShape2D_j5qlb"]
 radius = 223.336
 
-[sub_resource type="Animation" id="Animation_6bd6i"]
+[sub_resource type="Animation" id="Animation_1v0nq"]
 length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
+tracks/0/path = NodePath("CharacterBody2D/Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [null]
+"values": [1.0]
 }
 
-[sub_resource type="Animation" id="Animation_mo7si"]
+[sub_resource type="Animation" id="Animation_odml0"]
 resource_name = "hit_flash"
-length = 0.8
-step = 0.01
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:material:shader_parameter/flash_value")
+tracks/0/path = NodePath("CharacterBody2D/Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.06, 0.21),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [null, 1.0, null]
+"values": [1.0, 0.0, 1.0]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_50jq1"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_rffvb"]
 _data = {
-&"RESET": SubResource("Animation_6bd6i"),
-&"hit_flash": SubResource("Animation_mo7si")
+&"RESET": SubResource("Animation_1v0nq"),
+&"hit_flash": SubResource("Animation_odml0")
 }
+
+[sub_resource type="Gradient" id="Gradient_8y0m8"]
+offsets = PackedFloat32Array(0, 0.638806)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_odml0"]
+gradient = SubResource("Gradient_8y0m8")
+use_hdr = true
+fill = 1
+fill_from = Vector2(0.52649575, 0.4940171)
 
 [node name="CharacterBody2D" type="CharacterBody2D"]
 process_mode = 1
@@ -1103,21 +1112,27 @@ script = ExtResource("1_kqagk")
 position = Vector2(0, -53.3333)
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
-material = SubResource("ShaderMaterial_3ojpq")
+material = SubResource("ShaderMaterial_8y0m8")
+instance_shader_parameters/FloatParameter = 0.002000000095
+instance_shader_parameters/GlowColor = Color(3.2216988, 3.2216988, 3.2216988, 1)
+instance_shader_parameters/MaskColor = Color(0.3137255, 0.7254902, 0.92156863, 1)
+instance_shader_parameters/flash_value = 1.0
 scale = Vector2(0.15, 0.15)
 sprite_frames = SubResource("SpriteFrames_dte57")
 animation = &"idle"
 autoplay = "idle"
 
 [node name="Status_alert_sprite" type="AnimatedSprite2D" parent="."]
+self_modulate = Color(1.353256, 1.353256, 1.353256, 1)
 y_sort_enabled = true
 position = Vector2(-2.38419e-07, 10)
 scale = Vector2(0.0609922, 0.0609922)
-sprite_frames = SubResource("SpriteFrames_biutr")
+sprite_frames = SubResource("SpriteFrames_odml0")
 animation = &"idle"
 autoplay = "idle"
 
 [node name="Body_collider" type="CollisionShape2D" parent="."]
+visible = false
 position = Vector2(1.19209e-06, 9.99997)
 shape = SubResource("CapsuleShape2D_xdive")
 debug_color = Color(1, 1, 0, 0.0666667)
@@ -1137,7 +1152,7 @@ position = Vector2(0, 2)
 collision_mask = 6
 
 [node name="Effect" type="AnimatedSprite2D" parent="Skill_1_area"]
-self_modulate = Color(1.5, 1.5, 1.5, 1)
+self_modulate = Color(1.4807141, 1.4807141, 1.4807141, 1)
 z_index = 1
 position = Vector2(0, 6.10352e-05)
 scale = Vector2(0.285, 0.198826)
@@ -1191,8 +1206,12 @@ position = Vector2(0, 57)
 collision_mask = 6
 
 [node name="Effect" type="AnimatedSprite2D" parent="Ult_area"]
-self_modulate = Color(1.5, 1.5, 1.7, 1)
+light_mask = 0
 z_index = 1
+material = SubResource("ShaderMaterial_1v0nq")
+instance_shader_parameters/FloatParameter = 0.002000000095
+instance_shader_parameters/GlowColor = Color(1.4560761, 1.4560761, 1.4560761, 1)
+instance_shader_parameters/MaskColor = Color(0.54901963, 0.85490197, 0.9254902, 1)
 position = Vector2(1.52588e-05, -120.333)
 scale = Vector2(1.6213, 1.6213)
 sprite_frames = SubResource("SpriteFrames_ggw6e")
@@ -1210,6 +1229,12 @@ debug_color = Color(0.698039, 0.301961, 0.968627, 0.419608)
 [node name="Ult_time" type="Timer" parent="Ult_area"]
 one_shot = true
 
+[node name="Hit_flash_player" type="AnimationPlayer" parent="."]
+root_node = NodePath("../..")
+libraries = {
+&"": SubResource("AnimationLibrary_rffvb")
+}
+
 [node name="Skill1_cooldown" type="Timer" parent="."]
 wait_time = 8.0
 one_shot = true
@@ -1225,7 +1250,6 @@ one_shot = true
 [node name="Ulti_cooldown" type="Timer" parent="."]
 wait_time = 60.0
 one_shot = true
-autostart = true
 
 [node name="Combo_time" type="Timer" parent="."]
 wait_time = 0.4
@@ -1234,10 +1258,12 @@ one_shot = true
 [node name="Stun" type="Timer" parent="."]
 one_shot = true
 
-[node name="Hit_flash_player" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_50jq1")
-}
+[node name="PointLight2D" type="PointLight2D" parent="."]
+light_mask = 2
+scale = Vector2(9.158175, 9.158175)
+color = Color(1, 0.683537, 0.48337078, 1)
+energy = 1.07
+texture = SubResource("GradientTexture2D_odml0")
 
 [connection signal="get_healed" from="." to="." method="_on_get_healed"]
 [connection signal="animation_finished" from="Sprite2D" to="." method="_on_sprite_2d_animation_finished"]

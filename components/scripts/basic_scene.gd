@@ -33,11 +33,11 @@ var camera_follower : String = "res://scenes/miscellaneous/camera_follower.tscn"
 
 # array che contiene i tileset
 var tilesets : Array = [
-						"res://scenes/tilemaps/deep_forest_tile_map.tscn",
+						"res://scenes/tilemaps/gray_tile_map.tscn",
 						"res://scenes/tilemaps/deep_forest_2_tilemap.tscn",
 						"res://scenes/tilemaps/forest_2_tilemap.tscn",
-						"res://scenes/tilemaps/gray_tile_map.tscn",
-						"res://scenes/tilemaps/forest_tile_map.tscn"
+						"res://scenes/tilemaps/deep_forest_tile_map.tscn",
+						"res://scenes/tilemaps/forest_tile_map.tscn",
 						]
 
 var portal_scene = preload("res://scenes/miscellaneous/travel_portal.tscn")
@@ -63,8 +63,7 @@ func _ready():
 	tilesets = new_tileset_order
 	
 	Menu.game_status = Menu.GAME_STATUSES.unopenable
-	self.add_child(load(tilesets[boss_defeted_count]).instantiate(),true)
-	active_tileset = get_child(-1)
+	active_tileset = load(tilesets[boss_defeted_count]).instantiate()
 	active_enemy_container = active_tileset.find_child("Enemy_container")
 	active_enemy_container.scene_manager = self
 	active_enemy_container.round_changed.connect(round_gui._on_round_changed)
@@ -73,6 +72,7 @@ func _ready():
 	round_gui.powerup_spawnable.connect(active_enemy_container._on_powerup_spawnable)
 	active_enemy_container.instantiate_pickup.connect(powerup_handler._on_instantiate_pickable)
 	powerup_handler.spawn_pickable.connect(active_enemy_container._on_powerup_handler_spawn_pickable)
+	self.add_child(active_tileset,true)
 	
 func _process(_delta):
 	## stampa dei possibili output di danni per la formula, utile per testarla
@@ -108,15 +108,15 @@ func _on_gui_select_character(character):
 		player_scene = load("res://scenes/characters/tyrone.tscn")
 	elif selected_character == "nathan":
 		player_scene = load("res://scenes/characters/nathan.tscn")
-	add_child(player_scene.instantiate())
-	get_child(get_child_count()-1).name = "Player"
-	player = find_child("Player", true, false)
+	player = player_scene.instantiate()
+	player.name = "Player"
 	player.scale = Vector2(1.0, 1.0)
 	player.scene_manager = self
-	 
-	add_child(load(camera_follower).instantiate(), true)
-	get_child(get_child_count()-1).player = player
-	player.camera = get_child(get_child_count()-1).camera
+	
+	var new_camera = load(camera_follower).instantiate()
+	add_child(new_camera, true)
+	new_camera.player = player
+	player.camera = new_camera.camera
 	# impostazioni per la telecamera
 	player.shake_camera.connect(player.camera._on_player_shake_camera)
 	
@@ -133,6 +133,8 @@ func _on_gui_select_character(character):
 	gui.visible = false
 	canvas_layer.get_child(0).visible = true
 	Menu.game_status = Menu.GAME_STATUSES.dungeon
+	
+	add_child(player)
 
 # METODO CHE CONNETTE I SEGNALI AL PLAYER
 #	cicla ogni nodo figlio della root nella scena,
@@ -233,42 +235,39 @@ func _on_player_death():
 	game_over_retry.grab_focus()
 
 func activate_player_GUI():
+	var player_gui
 	# il pg scelto è Rufus allora insanzia la sua GUI
-	if player.char_name == "Tyrone":
-		canvas_layer.add_child(load("res://scenes/GUI/tyrone_gui.tscn").instantiate(),true)
+	if player is Tyrone:
+		player_gui = load("res://scenes/GUI/tyrone_gui.tscn").instantiate()
 	# il pg scelto è Nathan allora insanzia la sua GUI
 	elif player.char_name == "Nathan": 
-		canvas_layer.add_child(load("res://scenes/GUI/nathan_gui.tscn").instantiate(),true)
-	elif player.char_name == "Jack":
-		canvas_layer.add_child(load("res://scenes/GUI/jack_gui.tscn").instantiate(),true)
+		player_gui = load("res://scenes/GUI/nathan_gui.tscn").instantiate()
+	elif player is Jack:
+		player_gui = load("res://scenes/GUI/jack_gui.tscn").instantiate()
 	# connetto il segnale dell'enemy_container attivo con il digest _on_get_healed del player
 	active_enemy_container.heal_between_rounds.connect(player._on_get_healed)
 	
-	# assegno i parametri della GUI:
-	player_gui = canvas_layer.get_child(canvas_layer.get_child_count()-1)
 	if player.char_name == "Jack":
 		player.launched_flashbang.connect(player_gui._on_jack_flashbang)
 	player_gui.player = player
 	player_gui.player_death.connect(self._on_player_death)
 	player_gui.max_health = player.default_vit
-	player_gui.healthbar.max_value = player.default_vit
-	player_gui.healthbar.value = player.default_vit
-	player_gui.healthbar_label.text = str(player.default_vit) + "/" + str(player.default_vit)
 	# connetto infine il segnale del player al digest della GUI 
 	# in modo da poter aggiornare la GUI al variare della vita
 	player.set_health_bar.connect(player_gui._on_player_set_health_bar)
+	
+	canvas_layer.add_child(player_gui,true)
 
 func _on_boss_defeted():
 	# istanzio il portale
-	add_child(portal_scene.instantiate(),true)
-	# assegno alla variabile portal l'ultimo child della lista, cioè il nodo appena istanziato
-	portal = get_child(get_child_count()-1)
+	portal = portal_scene.instantiate()
 	# metto il portale dove è spawnato il boss
 	portal.global_position = active_enemy_container.boss_spawner.global_position
 	# assegno il paramentro player del portale al layer attivo
 	portal.player = player
 	# collego il segnale del portale allo scene manager per cambiare stage
 	portal.change_stage.connect(self._on_change_stage)
+	add_child(portal,true)
 
 func _on_change_stage():
 	boss_defeted_count += 1
@@ -280,10 +279,9 @@ func _on_change_stage():
 	active_tileset.queue_free()
 	active_enemy_container.queue_free()
 	
+	active_tileset = load(tilesets[boss_defeted_count]).instantiate()
 	# istanzio un nuovo nodo tileset e assegno quest'ultimo alla variabile del tileset attivo
-	add_child(load(tilesets[boss_defeted_count]).instantiate(), true)
-	active_tileset = get_child(-1)
-	active_enemy_container = get_child(-1).find_child("Enemy_container")
+	active_enemy_container = active_tileset.find_child("Enemy_container")
 	
 	player.global_position = active_enemy_container.boss_spawner.global_position
 	portal.global_position = active_enemy_container.boss_spawner.global_position
@@ -298,6 +296,7 @@ func _on_change_stage():
 	round_gui.powerup_spawnable.connect(active_enemy_container._on_powerup_spawnable)
 	active_enemy_container.instantiate_pickup.connect(powerup_handler._on_instantiate_pickable)
 	powerup_handler.spawn_pickable.connect(active_enemy_container._on_powerup_handler_spawn_pickable)
+	add_child(active_tileset, true)
 
 func _on_canvas_layer_child_entered_tree(_node: Node) -> void:
 	if canvas_layer:

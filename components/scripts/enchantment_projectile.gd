@@ -16,7 +16,8 @@ var MAX_LENGHT : int = 20
 var enchantment_force = 9
 var enchantment_stun_time = 5.0
 
-var enchantment_velocity_multiplyer = 500
+@export var enchantment_velocity_multiplyer : int = 500
+@export var time_to_live_duration : float = 6.0
 
 @onready var sprite = $Sprite2D
 
@@ -28,6 +29,7 @@ signal take_dmg(str, atk_str, sec_stun, pbc, efc, type, sender)
 
 func _ready():
 	sprite.play("effect")
+	time_to_live.start(time_to_live_duration)
 	origin = global_position
 
 func _physics_process(_delta):

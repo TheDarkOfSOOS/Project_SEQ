@@ -37,6 +37,7 @@ var first_enter = true
 
 var SPRITE_FLIP : bool
 var UPPER_BODY_COLLIDER_X : float
+var BODY_COLLIDER_X : float
 var HALBERD_COLLIDER_X : float
 var SPRINT_COLLIDER_X : float
 
@@ -72,6 +73,7 @@ func _ready():
 	load_stats(stats)
 	
 	SPRITE_FLIP = sprite.flip_h
+	BODY_COLLIDER_X = body_collider.position.x
 	UPPER_BODY_COLLIDER_X = upper_body_collider.position.x
 	HALBERD_COLLIDER_X = halberd_collider.position.x
 	SPRINT_COLLIDER_X = sprint_collider.position.x
@@ -82,6 +84,7 @@ func _ready():
 	
 	nodes_to_flip = [ 
 		upper_body_collider, UPPER_BODY_COLLIDER_X,  
+		body_collider, BODY_COLLIDER_X,
 		halberd_collider, HALBERD_COLLIDER_X,  
 		sprint_collider, SPRINT_COLLIDER_X
 	]
@@ -211,7 +214,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 #		spinge il nodo a destra di 450
 #	lo sprite diventa visibile
 #	faccio partire un timer per risettare le collisioni, se le riabilito insieme avviene un bug
-func _on_player_grab(is_been_grabbed, is_flipped, grab_position_marker):
+func _on_player_grab(is_been_grabbed, _is_flipped, _grab_position_marker):
 	if is_been_grabbed and !grabbed and is_in_atk_range:
 		set_idle()
 		sprite.play("damaged")
@@ -273,7 +276,7 @@ func _on_sprite_2d_frame_changed() -> void:
 	if sprite.animation == "temperance" and sprite.frame == 2:
 		_on_change_stats(temperance_changed_stat, temperance_amount, temperance_duration, true)
 
-func _on_animation_player_animation_finished(anim_name: StringName) -> void:
+func _on_animation_player_animation_finished(_anim_name: StringName) -> void:
 	is_performing_grab = false
 	emit_signal("grab_player", false, null, null)
 
@@ -339,7 +342,7 @@ func _on_reset_sprint_area_body_entered(body: Node2D) -> void:
 	if body is TileMapLayer or body == player:
 		set_idle()
 
-func _on_sprint_area_body_exited(body: Node2D) -> void:
+func _on_sprint_area_body_exited(_body: Node2D) -> void:
 	pass # Replace with function body.
 
 #DIGEST CHE PERMETTE DI FAR RIPARTIRE IL MOVIMENTO
