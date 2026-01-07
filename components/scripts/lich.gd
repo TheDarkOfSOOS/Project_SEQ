@@ -1,4 +1,4 @@
-extends Boss
+class_name Lich extends Boss
 
 var scene_manager : Node2D
 
@@ -9,12 +9,10 @@ var scene_manager : Node2D
 
 var grab_position
 
-var spawning = true # variabile a true finché non finisce l'animazione di spawning, altrimenti false
-var dying = false # variabile a false finché il boss è in vita, poi a true per l'animazione di death
-
 var MIN_DISTANCE : int = 10
 var MAX_DISTANCE : int = 30
 
+@warning_ignore("unused_signal")
 signal got_grabbed(is_grabbed)
 signal shake_camera(shake, strenght)
 
@@ -71,6 +69,8 @@ func _ready():
 	
 	var stats : Resource = load("res://components/resources/stats/lich_stats.tres")
 	load_stats(stats)
+	
+	#self.current_vit = 1
 	
 	emit_signal("set_health_bar_to_gui", default_vit)
 	sprite.play("spawn")
@@ -194,6 +194,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 
 # DIGEST DEL SENGALE DEL PLAYER "grab" #
 
+@warning_ignore("unused_parameter")
 func _on_player_grab(is_been_grabbed, is_flipped, grab_position_marker):
 	# QUESTO BOSS NON E' GRABBABILE
 	pass

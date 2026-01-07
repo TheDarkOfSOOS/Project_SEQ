@@ -26,6 +26,9 @@ var knockbacked : bool = false
 var knockback_target_point
 var knockback_force
 
+var sprite_references_scene : PackedScene = preload("res://scenes/miscellaneous/sprite_references.tscn")
+var SPRITE_REFERENCES : SpriteReferences
+
 var sprites_to_flip : Array
 var nodes_to_flip : Array
 var nodes_to_flip_rotation : Array
@@ -41,7 +44,7 @@ const status_icon : PackedScene = preload("res://scenes/miscellaneous/status_ico
 @onready var status_sprite : AnimatedSprite2D = $Status_alert_sprite
 @onready var stun_timer : Timer = $Stun
 
-func load_stats(stats : Resource) -> void:
+func load_stats(stats : Stats) -> void:
 	default_vit = stats.vit
 	#default_vit = 1
 	default_str = stats.str
@@ -56,6 +59,11 @@ func load_stats(stats : Resource) -> void:
 	current_des = default_des
 	current_pbc = default_pbc
 	current_efc = default_efc
+	
+	if stats.up != Vector2.ZERO:
+		SPRITE_REFERENCES = sprite_references_scene.instantiate()
+		self.add_child(SPRITE_REFERENCES, true)
+		SPRITE_REFERENCES.assign_values(stats.up, stats.right, stats.down, stats.left)
 
 func flip(is_flipped):
 	if is_flipped:
@@ -83,17 +91,17 @@ func flip(is_flipped):
 			if nodes_to_flip_rotation[i] is not float:
 				nodes_to_flip_rotation[i].rotation_degrees = -nodes_to_flip_rotation[i+1]
 
-func show_hitmarker(string : String, crit : bool, hitmarker_spawnpoint : Marker2D) -> void:
+func show_hitmarker(string : String, crit : bool, spawnpoint : Marker2D) -> void:
 	# istanzio l'hitmarker 
 	var hitmarker = hitmarker_scene.instantiate()
 	# lo posiziono nello spawnpoint
-	hitmarker.position = hitmarker_spawnpoint.global_position
+	hitmarker.position = spawnpoint.global_position
 	
 	# creo il tween per lo spostamento casuale
 	var tween = get_tree().create_tween()
 	tween.tween_property(hitmarker, 
 						"position", 
-						hitmarker_spawnpoint.global_position + (Vector2(randf_range(-1,1), -randf()) * 40), 
+						spawnpoint.global_position + (Vector2(randf_range(-1,1), -randf()) * 40), 
 						0.75)
 	
 	# cambio la label nella scena (che sono sicuro sia il child 0) con il danno
@@ -107,7 +115,7 @@ func show_hitmarker(string : String, crit : bool, hitmarker_spawnpoint : Marker2
 		hitmarker.get_child(0).set("theme_override_colors/font_color", Color.LIME_GREEN)
 	get_parent().add_child(hitmarker)
 
-func _on_change_stats(stat : String, amount : int, time_duration : float, ally_sender : bool) -> void:
+func _on_change_stats(stat : String, amount : int, time_duration : float, _ally_sender : bool) -> void:
 	if "strenght" in stat:
 		create_status_timer(stat, "str", amount, time_duration)
 	elif "weakness" in stat:
@@ -200,21 +208,22 @@ func emit_hit_particles(attacker):
 	# le riproduco 
 	particles.emitting = true
 
-func init_knockback(amount, force, sender):
+func init_knockback(amount : int, force : int, sender : Vector2):
 	velocity = Vector2(0, 0)
 	moving = false
 	knockbacked = true
 	
-	knockback_target_point = self.global_position + (sender.direction_to(self.global_position) * amount)
+	knockback_target_point = sender + (sender.direction_to(self.global_position) * amount)
+	
 	knockback_force = force
 	
-	self.add_child(knockback_controller_node.instantiate(), true)
-	var knockback_controller = get_child(-1)
-	knockback_controller.reparent(get_parent())
+	var knockback_controller : KnockbackController = knockback_controller_node.instantiate()
 	knockback_controller.target_point = knockback_target_point
 	knockback_controller.vel_multiplyer = force
 	knockback_controller.caller = self
 	knockback_controller.target_reached.connect(self._on_knockback_reset)
+	get_parent().call_deferred("add_child", knockback_controller, true)
+	knockback_controller.global_position = self.global_position
 
 func apply_knockback(delta):
 	velocity = Vector2(0, 0)

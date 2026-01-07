@@ -1,4 +1,4 @@
-extends Node2D
+class_name Enemy_Container extends Node2D
 
 var markers : Array = [] # array che contiene tutti i marker della scena
 var active_markers : Array = [] # array che si popola allo spawnare dei nemici
@@ -15,7 +15,7 @@ var possible_enemies : Array = [
 # [0] = Zombie
 # [1] = Scheletro
 # [2] = Gigante
-# [3] = Mezzo-umano
+# [3] = Lupo Mannaro
 # [4] = Fata
 # [5] = Centauro
 
@@ -26,7 +26,7 @@ var boss_scene : Resource = preload("res://scenes/enemies/lich.tscn")
 var instantiated_line : Line2D
 var line : Line2D
 
-var scene_manager : Node2D
+var scene_manager : SceneManager
 
 # ogni quante ondata spawna un boss
 var boss_round : int = 10
@@ -42,10 +42,11 @@ var boss_is_defeted : bool = false # flag che determina quando il boss è stato 
 var boss_spawned : bool = false # flag che determina se il boss è spawnato
 var portal_spawned : bool = false # flag che determina se il portale è spawnato
 
-var powerup_spawned : bool = true
-var powerup_spawnable : bool = false
-var powerup_picked : bool = true
-var dramatic_flag : bool = false
+var powerup_spawned : bool = true # flag che determina se è spawnato il powerup
+var powerup_spawnable : bool = false # flag che determina se è spawnabile il powerup
+var powerup_picked : bool = true # flag che determina se il powerup è stato raccolto
+
+var dramatic_flag : bool = false # flag che determina se far partire lo slow motion
 
 @onready var time_between_rounds : Timer = $Round_cooldown
 @onready var boss_spawner : Marker2D = $Boss_spawner
@@ -56,50 +57,74 @@ func _ready():
 		if "Spawnpoint" in i.name:
 			markers.append(i)
 
-#METODO CHE VIENE EVOCATO AD OGNI FRAME, CONTROLLA SE I NEMICI SONO ANCORA PRESENTI IN GAME
+#METODO CHE VIENE INVOCATO AD OGNI FRAME, CONTROLLA SE I NEMICI SONO ANCORA PRESENTI IN GAME
 func _process(_delta):
+	# metto le flag di controllo a falso
 	fighting = false
 	var boss_present = false
 	var powerup_present = false
+	
+	# ciclo i figli del container
 	for i in get_children():
+		# se c'è un nemico, metto che siamo in combattimento
 		if i is Enemy:
 			fighting = true
+		# se c'è un boss ed è il round dove è spawnato allora è presente
 		if i is Boss and is_boss_round():
 			boss_present = true
+		# se c'è un powerup pickable, allora è presente
 		if i is Powerup_Pick:
 			powerup_present = true
 	
+	# se il boss è spawnato E il boss NON è presente, allora vuol dire che è stato sconfitto
 	if boss_spawned and not boss_present:
 		boss_is_defeted = true
 	
+	# se il powerup è spawnato E il pickable NON è presente, allora vul dire che è stato raccolto
 	if powerup_spawned and not powerup_present:
 		powerup_picked = true
 	
+	# se la linea guida esiste, allora la aggiorno
 	if is_instance_valid(line):
-		var new_array : Array[Vector2] = [scene_manager.player.global_position, boss_spawner.global_position]
+		var new_array : Array[Vector2] = [scene_manager.player.SPRITE_REFERENCES.r["down"].global_position, boss_spawner.global_position]
 		line.points = PackedVector2Array(new_array)
 	
+	# se il boss NON è sconfitto oppure il powerup è spawnabile e...
 	if not boss_is_defeted or powerup_spawnable:
+		# ...se il non si sta combattendo e non è spawnato il powerup ed è spawnabile
 		if not fighting and not powerup_spawned and powerup_spawnable:
-			dramatic_slow_motion()
+			# se non è il round del boss allora faccio partire lo slow motion
+			if not is_boss_round():
+				dramatic_slow_motion()
+			# istanzio il pickable
 			emit_signal("instantiate_pickup")
+			# dico che ho spawnato il powerup
 			powerup_spawned = true
+			# ovviamente non è stato preso perché l'ho appena spawnato
 			powerup_picked = false
+			# ora non è più spawnabile
 			powerup_spawnable = false
+		# ...altrimenti se non si sta combattendo e il tempo tra round è finito E il powerup è stato raccolto
 		elif not fighting and time_between_rounds.is_stopped() and powerup_picked:
+			# se la linea è spawnata la tolgo
 			if is_instance_valid(line):
 				line.queue_free()
+			# faccio partire lo slow motion
 			dramatic_slow_motion()
+			# faccio partire il tempo tra i rounds
 			time_between_rounds.start()
-	else:
+	else: # altrimenti
+		# se non è spawnato il portale e il powerup è stato raccolto
 		if not portal_spawned and powerup_picked:
+			# dichiaro che il boss è stato sconfitto
 			emit_signal("boss_defeted")
+			# e dico che il portale è spawnato
 			portal_spawned = true
 
 # DIGEST DEL TIMER CHE DETERMINA QUANDO DEVE PARTIRE UNA NUOVA ONDATA
 func _on_round_cooldown_timeout():
 	var player = get_parent().get_parent().player
-	var heal_amount = round(player.default_vit / 4)
+	var heal_amount = round(player.default_vit / 10)
 	emit_signal("round_changed") # invio il segnale al round_gui per incremetare l'ondata
 	emit_signal("heal_between_rounds", heal_amount) # invio il segnale al player per curarsi di una certa quantità
 	fighting = true # di conseguenza i nemici spawneranno quindi combatto
@@ -165,7 +190,7 @@ func activate_markers():
 			out = true # seleziono il percorso
 		
 		var new_enemy = enemy_scene.instantiate()
-		new_enemy = possible_enemies[randi_range(2,2)].instantiate() # debug
+		#new_enemy = possible_enemies[randi_range(0,0)].instantiate() # debug
 		
 		# setto la posizione del nemico spawnato al marker attivo
 		new_enemy.global_position = i.position 
@@ -190,16 +215,19 @@ func is_boss_round():
 	else: # altrimenti
 		return false # ritorno falso
 
+# DIGEST DEL SEGNALE CHE RESETTA IL CONTROLLO DEL POWER-UP
 func _on_powerup_spawnable() -> void:
 	powerup_spawnable = true
 	powerup_picked = false
 	powerup_spawned = false
 
+# DIGEST DEL SEGNALE DEL POWER-UP HANDLER CHE REPARENTA IL PICKABLE
 func _on_powerup_handler_spawn_pickable(node : Variant) -> void:
 	node.reparent(self)
 	node.global_position = boss_spawner.global_position
 	instantiate_line()
 
+# METODO PER FAR PARTIRE LO SLOW MOTION
 func dramatic_slow_motion() -> void:
 	if dramatic_flag:
 		Engine.time_scale = 0.3
@@ -207,8 +235,9 @@ func dramatic_slow_motion() -> void:
 		Engine.time_scale = 1.0
 		dramatic_flag = false
 
+# METODO PER ISTANZIARE LA LINEA DA FAR SEGUIRE AL PLAYER
 func instantiate_line():
-	var new_array : Array[Vector2] = [scene_manager.player.global_position, boss_spawner.global_position]
+	var new_array : Array[Vector2] = [scene_manager.player.SPRITE_REFERENCES.r["down"].global_position, boss_spawner.global_position]
 	instantiated_line = line_scene.instantiate()
 	instantiated_line.points = PackedVector2Array(new_array)
 	self.add_child(instantiated_line, true)

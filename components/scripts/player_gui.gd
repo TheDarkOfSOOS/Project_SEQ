@@ -10,7 +10,7 @@ var player : Player
 @onready var healthbar : ProgressBar = $MarginContainer/PanelContainer/Control/Health_bar
 @onready var healthbar_label = $MarginContainer/PanelContainer/Control/Health_bar/Health_label
 
-@onready var animation_player = $AnimationPlayer
+var animation_player : AnimationPlayer
 var max_health : int
 
 signal player_death()
@@ -19,6 +19,8 @@ var alive = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	if get_node_or_null("AnimationPlayer"):
+		animation_player = $AnimationPlayer
 	healthbar.max_value = max_health
 	healthbar.value = player.current_vit
 	healthbar_label.text = str(player.default_vit) + "/" + str(player.default_vit)

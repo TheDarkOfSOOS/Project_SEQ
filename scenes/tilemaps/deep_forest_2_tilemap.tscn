@@ -11,20 +11,10 @@
 [ext_resource type="Texture2D" uid="uid://bjvlgliqlsxy3" path="res://components/sprites/tilemaps/gentle sheets/gentle trees 80x96 v03.png" id="9_1knrn"]
 [ext_resource type="Texture2D" uid="uid://b0xcsqlgt41i8" path="res://components/sprites/tilemaps/gentle animations/gentle water sparkles A v03.png" id="10_wukpe"]
 [ext_resource type="Texture2D" uid="uid://csuml8ckaor86" path="res://components/sprites/tilemaps/gentle animations/gentle waterfall A v03.png" id="11_3cqty"]
-[ext_resource type="Script" uid="uid://b6ky75s4yqxlb" path="res://components/scripts/gray_enemy_container.gd" id="12_qj34w"]
+[ext_resource type="Script" uid="uid://b6ky75s4yqxlb" path="res://components/scripts/enemy_container.gd" id="12_qj34w"]
 [ext_resource type="Shader" uid="uid://camrr6hu5udic" path="res://components/shaders/test.gdshader" id="13_x45w3"]
 [ext_resource type="Script" uid="uid://bm2h8iqn32du6" path="res://components/scripts/shader_pause_detector.gd" id="14_l1edd"]
-
-[sub_resource type="Environment" id="Environment_rp21u"]
-background_mode = 3
-background_color = Color(1, 1, 1, 1)
-glow_enabled = true
-glow_normalized = true
-glow_intensity = 1.5
-glow_strength = 1.09
-glow_bloom = 0.06
-glow_blend_mode = 0
-adjustment_enabled = true
+[ext_resource type="PackedScene" uid="uid://blmjeddy3syy" path="res://scenes/miscellaneous/forest_environment.tscn" id="15_7w3nx"]
 
 [sub_resource type="TileMapPattern" id="TileMapPattern_kj4iq"]
 tile_data = PackedInt32Array(262144, 524292, 21, 327680, 524292, 22, 131073, 589828, 19, 196609, 589828, 20, 262145, 589828, 21, 327681, 589828, 22, 65538, 655364, 18, 131074, 655364, 19, 196610, 655364, 20, 262146, 655364, 21, 327682, 655364, 22, 65539, 720900, 18, 131075, 720900, 19, 196611, 720900, 20, 262147, 720900, 21, 327683, 720900, 22, 65540, 786436, 18, 131076, 786436, 19, 196612, 786436, 20, 262148, 786436, 21, 327684, 786436, 22, 65541, 851972, 18, 131077, 851972, 19, 196613, 851972, 20, 262149, 851972, 21, 327685, 851972, 22, 6, 917508, 17, 65542, 917508, 18, 131078, 917508, 19, 196614, 917508, 20, 262150, 917508, 21, 327686, 917508, 22, 7, 983044, 17, 65543, 983044, 18, 131079, 983044, 19, 196615, 983044, 20, 262151, 983044, 21, 327687, 983044, 22)
@@ -5160,10 +5150,10 @@ domain_warp_amplitude = 100.0
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_wmrt4"]
 width = 915
 height = 950
-seamless = true
-seamless_blend_skirt = 0.75
-normalize = false
 noise = SubResource("FastNoiseLite_wmrt4")
+seamless = true
+normalize = false
+seamless_blend_skirt = 0.75
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rp21u"]
 shader = ExtResource("13_x45w3")
@@ -5203,9 +5193,6 @@ turbulence_noise_scale = 5.175
 process_mode = 1
 y_sort_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_rp21u")
-
 [node name="Boundaries" type="StaticBody2D" parent="."]
 visible = false
 collision_priority = 999999.0
@@ -5244,7 +5231,7 @@ navigation_enabled = false
 [node name="Decorative" type="TileMapLayer" parent="."]
 y_sort_enabled = true
 scale = Vector2(2, 2)
-tile_map_data = PackedByteArray("AAD3//P/BQAEAAAAAAARAP7/BQAAAAAAAAATAAAABQACAAAAAAD4//v/BQAEAAAAAAAEAAYABQAAAAAAAAD3/wsABQAEAAAAAADw/wcABQAAAAAAAADt//7/BQAAAAAAAAATAP7/BwAAAAAAAAD8/wUABwAAAAAAAAD6//r/BwAAAAAAAAD7//v/BQAAAAAAAAA=")
+tile_map_data = PackedByteArray("AAD3//P/BQAEAAAAAAARAP7/BQAAAAAAAAATAAAABQACAAAAAAAEAAYABQAAAAAAAADw/wcABQAAAAAAAADt//7/BQAAAAAAAAATAP7/BwAAAAAAAAD8/wUABwAAAAAAAAD6//r/BwAAAAAAAADy/w0ABQAEAAAAAAA=")
 tile_set = SubResource("TileSet_5xdkc")
 
 [node name="Tree_walls" type="TileMapLayer" parent="."]
@@ -5262,7 +5249,7 @@ wait_time = 4.0
 one_shot = true
 
 [node name="Spawnpoint" type="Marker2D" parent="Enemy_container"]
-position = Vector2(-417, -393)
+position = Vector2(391, 222)
 
 [node name="Spawnpoint2" type="Marker2D" parent="Enemy_container"]
 position = Vector2(297, -260)
@@ -5285,15 +5272,6 @@ position = Vector2(103, 361)
 [node name="Spawnpoint8" type="Marker2D" parent="Enemy_container"]
 position = Vector2(-688, 77)
 
-[node name="Spawnpoint9" type="Marker2D" parent="Enemy_container"]
-position = Vector2(-165, 127)
-
-[node name="Spawnpoint10" type="Marker2D" parent="Enemy_container"]
-position = Vector2(101, -439)
-
-[node name="Spawnpoint11" type="Marker2D" parent="Enemy_container"]
-position = Vector2(522, 306)
-
 [node name="Boss_spawner" type="Marker2D" parent="Enemy_container"]
 
 [node name="Fog_shader" type="ColorRect" parent="."]
@@ -5313,6 +5291,9 @@ scale = Vector2(23.0349, -14.5415)
 amount = 1000
 lifetime = 10.0
 preprocess = 0.5
+speed_scale = 1.33
 process_material = SubResource("ParticleProcessMaterial_wmrt4")
+
+[node name="WorldEnvironment" parent="." instance=ExtResource("15_7w3nx")]
 
 [connection signal="timeout" from="Enemy_container/Round_cooldown" to="Enemy_container" method="_on_round_cooldown_timeout"]

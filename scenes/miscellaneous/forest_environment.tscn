@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://blmjeddy3syy"]
+
+[sub_resource type="Environment" id="Environment_euj4w"]
+background_mode = 3
+background_color = Color(0.233925, 0.233925, 0.233925, 1)
+glow_enabled = true
+glow_intensity = 0.2
+glow_strength = 1.31
+glow_blend_mode = 1
+adjustment_brightness = 0.74
+adjustment_saturation = 0.74
+
+[node name="WorldEnvironment" type="WorldEnvironment"]
+environment = SubResource("Environment_euj4w")

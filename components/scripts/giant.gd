@@ -154,7 +154,6 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 			emit_signal("shake_camera", true, dmg_info[2])
 		if (dmg >= 25 or dmg <= 0) and stun_sec > 0:
 			punch_effect.play("idle")
-			sprite.position = Vector2.ZERO
 			attacking = false
 			moving = false
 			stun_timer.start(stun_sec)
@@ -162,7 +161,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 
 # DIGEST DEL SENGALE DEL PLAYER "grab" #
 
-func _on_player_grab(is_been_grabbed, is_flipped, grab_position_marker):
+func _on_player_grab(is_been_grabbed, _is_flipped, grab_position_marker):
 	if is_been_grabbed and !grabbed and is_in_atk_range:
 		set_idle()
 		sprite.play("damaged")

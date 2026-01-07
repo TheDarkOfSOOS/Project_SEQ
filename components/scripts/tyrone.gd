@@ -13,11 +13,6 @@ signal change_stats(stat, amount, time_duration, ally_sender)
 signal inflict_knockback(amount, force, sender)
 signal shake_camera(shake, strenght)
 
-@export var ACCELERATION : float = 10000.0
-@export var FRICTION : float = 6500.0
-
-@onready var axis = Vector2.ZERO
-
 var initial_y_position = 0
 const MAX_Y_POSITION = 270
 
@@ -27,6 +22,7 @@ var BASIC_ATK_COLLIDER_POSITION_X : float
 var SKILL1_COLLIDER_POSITION_X : float
 
 var atk_state = Atk_States.IDLE
+var suitable_for_sliding : Array[Enemy]
 
 var can_interact_with_something = false
 var grab_marker
@@ -67,10 +63,10 @@ var ult_moving_mod
 @export var ult_knockback_force = 8
 @onready var ult_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
 
-@onready var sprite : AnimatedSprite2D = $Sprite2D
 @onready var camera
 
 @onready var bs_atk_collider : CollisionShape2D = $Basic_atk_Area/Atk_collider
+@onready var sliding_collider : CollisionShape2D = $Sliding_area/Collider
 
 @onready var skill1_collider : CollisionShape2D = $Skill_1_area/Skill_collider
 @onready var skill1_effect : AnimatedSprite2D = $Skill_1_area/Effect
@@ -127,7 +123,7 @@ func _ready():
 	
 	emit_signal("set_health_bar", default_vit)
 
-func _physics_process(delta):
+func _physics_process(delta : float):
 	if knockbacked:
 		apply_knockback(delta)
 	if grabbed:
@@ -141,53 +137,7 @@ func _physics_process(delta):
 	if is_moving_ult:
 		ult_moving()
 
-#METODO CHE GESTISCE IL MOVIMENTO DEL PLAYER
-	#pulisce il vettore della velocità
-	## Last Win #
-	#quando si gira il player a destra o sinistra si deve girare anche le aree, 
-	#altrimenti ci sarebbe il personaggio flippato ma l\'area rimane dall\'altra
-	#parte
-
-func move(delta):
-	axis = get_input_axis()
-	if axis == Vector2.ZERO:
-		apply_friction(FRICTION * delta)
-	else:
-		sprite.play("running")
-		apply_movement(axis * ACCELERATION * delta)
-		if axis.x < 0:
-			flip_sprite(true)
-		elif axis.x > 0:
-			flip_sprite(false)
-		
-	move_and_slide()
-
-func get_input_axis():
-	axis.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
-	axis.y = Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
-	return axis
-
-func apply_friction(amount):
-	if velocity.length() > amount:
-		velocity -= velocity.normalized() * amount
-	else:
-		velocity = Vector2.ZERO
-		sprite.play("idle")
-
-func apply_movement(accel):
-	velocity += accel
-	velocity = velocity.limit_length(current_des * 2.5)
-
-func reset_axis():
-	velocity = Vector2.ZERO
-	axis = Vector2.ZERO
-
-#METODO CHE GESTISCE TUTTE LE ABILITA' DEL PLAYER
-	#ad ogni if si controlla l'azione possibile, per l'attacco di base si trovano
-	#dei controlli aggiuntivi in base alla combo:
-	#si controlla come prima cosa se l'input è stato premuto, se l'animazione è diversa da idle o running (ovvero o è fermo
-	#o si sta spostando) oppure il numero di combo che sta facendo ed infine se non è in cooldown
-
+# OVERRIDE
 func atk_handler():
 	if Input.is_action_just_pressed("base_atk") and (sprite.animation == "idle" or sprite.animation == "running") and atk_anim_finished and not can_interact_with_something:
 		moving = false
@@ -195,7 +145,20 @@ func atk_handler():
 		atk_anim_finished = false
 		atk_state = Atk_States.BASE_ATK
 		sprite.play("base atk1")
-		reset_axis()
+		# gestione sliding 
+		suitable_for_sliding.sort_custom(
+			func(a, b): 
+				return self.global_position.distance_to(a.global_position) <  self.global_position.distance_to(b.global_position)
+		)
+		if not suitable_for_sliding.is_empty():
+			if (suitable_for_sliding[0].global_position.direction_to(self.global_position).x > 0):
+				init_knockback(1, 20, suitable_for_sliding[0].SPRITE_REFERENCES.r["right"].global_position)
+				flip_sprite(true)
+			else:
+				init_knockback(1, 20, suitable_for_sliding[0].SPRITE_REFERENCES.r["left"].global_position)
+				flip_sprite(false)
+		else:
+			reset_axis()
 	
 	elif Input.is_action_just_pressed("base_atk") and sprite.animation == "base atk1" and atk_anim_finished and not can_interact_with_something:
 		atk_state = Atk_States.BASE_ATK
@@ -268,12 +231,22 @@ func atk_handler():
 	#manderebbe dei segnali inutili
 
 func _on_basic_atk_area_body_entered(body):
-	if body != self:
+	if body is Enemy:
 		emit_signal("is_in_atk_range", true, body)
 
 func _on_basic_atk_area_body_exited(body):
 	if body != self:
 		emit_signal("is_in_atk_range", false, body)
+
+func _on_sliding_area_body_entered(body: Node2D) -> void:
+	if body is Enemy:
+		suitable_for_sliding.append(body)
+
+func _on_sliding_area_body_exited(body: Node2D) -> void:
+	if body is Enemy:
+		var index = suitable_for_sliding.find(body)
+		if index >= 0:
+			suitable_for_sliding.remove_at(index)
 
 func _on_eva_area_body_entered(body):
 	if body != self:
@@ -346,7 +319,6 @@ func flip_sprite(flip):
 		skill1_effect.flip_h = false
 
 func _on_sprite_2d_animation_finished():
-
 	if atk_state == Atk_States.BASE_ATK and sprite.animation == "base atk1":
 		atk_anim_finished = true
 		combo_time.start()
@@ -424,6 +396,7 @@ func _on_effect_frame_changed():
 # METODO CHE FA MUOVERE LO SPRITE IN ALTO DURANTE L'ANIMAZIONE DELLA ULTI #
 func ult_moving():
 	self.set_collision_layer_value(1, false)
+	self.set_collision_mask_value(2, false)
 	sprite.z_index = 1
 	sprite.position.y += ult_moving_mod
 	if sprite.flip_h:
@@ -439,7 +412,7 @@ func ult_moving():
 
 #  -- set_idle mi permette di resettare il player allo stato di idle --  #
 func set_idle():
-	if not grabbed:
+	if not grabbed and not knockbacked:
 		reset_axis()
 		
 		atk_state = Atk_States.IDLE
@@ -500,30 +473,13 @@ func evade():
 	velocity = Vector2.ZERO
 	self.set_collision_layer_value(1, false)
 	
-	if axis.x == 0 and axis.y < 0:
-		velocity.y += -evade_amount
-	elif axis.x == 0 and axis.y > 0:
-		velocity.y += evade_amount
-	elif axis.x < 0 and axis.y == 0:
-		velocity.x += -evade_amount
-	elif axis.x > 0 and axis.y == 0:
-		velocity.x += evade_amount
-	elif axis.x > 0 and axis.y < 0:
-		velocity.x += evade_amount
-		velocity.y += -evade_amount
-	elif axis.x > 0 and axis.y > 0:
-		velocity.x += evade_amount
-		velocity.y += evade_amount
-	elif axis.x < 0 and axis.y > 0:
-		velocity.x += -evade_amount
-		velocity.y += evade_amount
-	elif axis.x < 0 and axis.y < 0:
-		velocity.x += -evade_amount
-		velocity.y += -evade_amount
+	if axis != Vector2.ZERO:
+		velocity += axis * evade_amount
 	elif sprite.flip_h:
-		velocity.x += -evade_amount
+		velocity += Vector2(-1, 0) * evade_amount
 	else:
-		velocity.x += evade_amount
+		velocity += Vector2(1, 0) * evade_amount
+	
 	move_and_slide()
 
 # -- DIGEST SEGNALI NEMICI -- 

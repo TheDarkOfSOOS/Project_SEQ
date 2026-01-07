@@ -7,6 +7,7 @@ var grab_position
 signal take_dmg(str, atk_str, sec_stun, pbc, efc, type, sender)
 signal got_grabbed(is_grabbed)
 signal grab_player(has_grabbed, grab_position_marker, sender)
+@warning_ignore("unused_signal")
 signal change_stats(stat, amount, time_duration, ally_sender)
 signal inflict_knockback(amount, force, sender)
 signal shake_camera(shake, strenght)

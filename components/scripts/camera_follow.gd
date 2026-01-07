@@ -1,8 +1,13 @@
-extends CharacterBody2D
+class_name CameraFollower extends CharacterBody2D
 
 var player : CharacterBody2D
 @onready var camera : Camera2D = $Main_camera
 @export var weight : float = 3.4
+
+func _ready() -> void:
+	if is_instance_valid(player):
+		player.camera = self.camera
+		player.shake_camera.connect(self.camera._on_player_shake_camera)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

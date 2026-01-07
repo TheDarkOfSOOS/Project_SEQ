@@ -5,6 +5,7 @@ var scene_manager : Node2D
 var grab_position
 
 signal got_grabbed(is_grabbed)
+@warning_ignore("unused_signal")
 signal change_stats(stat, amount, time_duration, ally_sender)
 signal shake_camera(shake, strenght)
 
@@ -243,6 +244,7 @@ func heal():
 
 # DIGEST DEL SENGALE DEL PLAYER "grab" #
 
+@warning_ignore("unused_parameter")
 func _on_player_grab(is_been_grabbed, is_flipped, grab_position_marker):
 	if is_been_grabbed and !grabbed and is_in_atk_range:
 		set_idle()

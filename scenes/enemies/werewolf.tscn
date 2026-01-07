@@ -541,7 +541,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("WerewolfEnemy/Sprite2D:instance_shader_parameters/flash_value")
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -556,7 +556,7 @@ resource_name = "hit_flash"
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("WerewolfEnemy/Sprite2D:instance_shader_parameters/flash_value")
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -700,7 +700,6 @@ max_neighbors = 20
 max_speed = 1703.04
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
-root_node = NodePath("../..")
 libraries = {
 &"": SubResource("AnimationLibrary_sqyyl")
 }

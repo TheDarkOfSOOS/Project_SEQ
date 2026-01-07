@@ -13,7 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://clg8yub6nrgy2" path="res://components/sprites/enemies/giant/gigant_punch_effect.png" id="10_16wu7"]
 [ext_resource type="Texture2D" uid="uid://b3fidqnkebbr8" path="res://components/sprites/enemies/giant/gigant_earthquake_effect.png" id="11_rel8w"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_kb1pu"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pbjuc"]
 resource_local_to_scene = true
 shader = ExtResource("2_m3xf6")
 
@@ -673,7 +673,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("GiantEnemy/Sprite2D:instance_shader_parameters/flash_value")
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -688,7 +688,7 @@ resource_name = "hit_flash"
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("GiantEnemy/Sprite2D:instance_shader_parameters/flash_value")
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -730,7 +730,7 @@ scale = Vector2(1.43977, 1.43977)
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 editor_description = "sposta di 40 px lo sprite"
 y_sort_enabled = true
-material = SubResource("ShaderMaterial_kb1pu")
+material = SubResource("ShaderMaterial_pbjuc")
 instance_shader_parameters/FloatParameter = 0.0070000003325
 instance_shader_parameters/GlowColor = Color(0, 1.353256, 0, 1)
 instance_shader_parameters/MaskColor = Color(0.45918357, 0.95532125, 0.31405702, 1)
@@ -881,7 +881,6 @@ max_neighbors = 20
 max_speed = 1703.04
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
-root_node = NodePath("../..")
 libraries = {
 &"": SubResource("AnimationLibrary_h1vit")
 }

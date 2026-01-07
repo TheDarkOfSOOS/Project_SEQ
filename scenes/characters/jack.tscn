@@ -1275,6 +1275,7 @@ change_stats_timer_node = ExtResource("4_bxdqx")
 bullet_scene = ExtResource("3_wfqrd")
 
 [node name="Control" type="Control" parent="."]
+light_mask = 0
 z_index = 11
 layout_mode = 3
 anchors_preset = 15
@@ -1287,6 +1288,7 @@ grow_vertical = 2
 size_flags_vertical = 4
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Control"]
+light_mask = 0
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -1301,6 +1303,7 @@ grow_vertical = 0
 theme_override_constants/separation = 1
 
 [node name="TextureRect" type="TextureRect" parent="Control/HBoxContainer"]
+light_mask = 0
 z_index = 10
 y_sort_enabled = true
 layout_mode = 2
@@ -1309,6 +1312,7 @@ expand_mode = 2
 stretch_mode = 5
 
 [node name="Label" type="Label" parent="Control/HBoxContainer"]
+light_mask = 0
 z_index = 10
 y_sort_enabled = true
 layout_mode = 2

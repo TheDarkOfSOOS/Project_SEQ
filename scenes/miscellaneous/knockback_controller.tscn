@@ -6,6 +6,7 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_l2416"]
 
 [node name="Knockback_controller" type="CharacterBody2D"]
+process_mode = 1
 script = ExtResource("1_arpny")
 
 [node name="Collision" type="CollisionShape2D" parent="."]

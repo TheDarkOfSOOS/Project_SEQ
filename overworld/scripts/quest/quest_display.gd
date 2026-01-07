@@ -14,7 +14,7 @@ func dump_quest_data():
 	var quest_description : String
 	var quest_status : int
 	var quest_display_node : Node
-	var count : int
+	var count : int = 0
 	for quest_id in QuestManager.quests.keys():
 		quest_status = QuestManager.quests[quest_id].status
 		if quest_status != QuestStatus.of_type.hidden:

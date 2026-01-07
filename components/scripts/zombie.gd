@@ -174,7 +174,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 
 # DIGEST DEL SENGALE DEL PLAYER "grab" #
 
-func _on_player_grab(is_been_grabbed, is_flipped, grab_position_marker):
+func _on_player_grab(is_been_grabbed, _is_flipped, grab_position_marker):
 	if is_been_grabbed and !grabbed and is_in_atk_range:
 		set_idle()
 		sprite.play("damaged")

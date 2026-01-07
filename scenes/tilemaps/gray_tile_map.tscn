@@ -1,18 +1,9 @@
-[gd_scene load_steps=72 format=4 uid="uid://bhsei62gvosxv"]
+[gd_scene load_steps=70 format=4 uid="uid://bhsei62gvosxv"]
 
+[ext_resource type="PackedScene" uid="uid://blmjeddy3syy" path="res://scenes/miscellaneous/forest_environment.tscn" id="1_euj4w"]
 [ext_resource type="Texture2D" uid="uid://cs5jopxmileup" path="res://components/sprites/mainlevbuild.png" id="1_uhrny"]
 [ext_resource type="Texture2D" uid="uid://1myxeqojf4he" path="res://components/sprites/decorative.png" id="2_42pd3"]
-[ext_resource type="Script" uid="uid://b6ky75s4yqxlb" path="res://components/scripts/gray_enemy_container.gd" id="3_0q7ik"]
-
-[sub_resource type="Environment" id="Environment_euj4w"]
-background_mode = 3
-background_color = Color(0.233925, 0.233925, 0.233925, 1)
-glow_enabled = true
-glow_intensity = 0.2
-glow_strength = 1.31
-glow_blend_mode = 1
-adjustment_brightness = 0.74
-adjustment_saturation = 0.74
+[ext_resource type="Script" uid="uid://b6ky75s4yqxlb" path="res://components/scripts/enemy_container.gd" id="3_0q7ik"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_05ucm"]
 vertices = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
@@ -1827,14 +1818,6 @@ navigation_layer_0/layers = 1
 sources/1 = SubResource("TileSetAtlasSource_x50h8")
 sources/2 = SubResource("TileSetAtlasSource_gwla5")
 
-[sub_resource type="Gradient" id="Gradient_euj4w"]
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_tx7nl"]
-gradient = SubResource("Gradient_euj4w")
-fill = 1
-fill_from = Vector2(1, 0)
-fill_to = Vector2(0.9982906, 0.0017094017)
-
 [sub_resource type="Gradient" id="Gradient_0q7ik"]
 offsets = PackedFloat32Array(0.0911765, 0.526471)
 colors = PackedColorArray(0.164706, 0, 0.439216, 0.635294, 0, 0, 0, 0.15)
@@ -1857,8 +1840,7 @@ color_ramp = SubResource("Gradient_0q7ik")
 process_mode = 1
 y_sort_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_euj4w")
+[node name="WorldEnvironment" parent="." instance=ExtResource("1_euj4w")]
 
 [node name="Ground" type="TileMapLayer" parent="."]
 z_index = -1
@@ -1942,19 +1924,14 @@ position = Vector2(-452, 509)
 
 [node name="Boss_spawner" type="Marker2D" parent="Enemy_container"]
 
-[node name="Dark_light2D" type="PointLight2D" parent="."]
-position = Vector2(3, 7)
-scale = Vector2(53, 53)
-energy = 0.65
-blend_mode = 1
-range_item_cull_mask = 3
-texture = SubResource("GradientTexture2D_tx7nl")
-
 [node name="PointLight2D3" type="PointLight2D" parent="."]
 visible = false
 position = Vector2(-4.99997, 1)
 scale = Vector2(9, 12.9)
 energy = 8.47
 texture = SubResource("NoiseTexture2D_euj4w")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.68307734, 0.6830774, 0.68307734, 1)
 
 [connection signal="timeout" from="Enemy_container/Round_cooldown" to="Enemy_container" method="_on_round_cooldown_timeout"]

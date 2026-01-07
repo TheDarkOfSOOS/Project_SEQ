@@ -10,17 +10,14 @@ enum Atk_States {IDLE, BASE_ATK, SK1, SK2, EVA, ULT}
 signal is_in_atk_range(is_in, body)
 signal take_dmg(str, atk_str, sec_stun, pbc, efc, sender)
 signal set_health_bar(current_vit)
+@warning_ignore("unused_signal")
 signal get_healed(amount)
+@warning_ignore("unused_signal")
 signal change_stats(stat, amount, time_duration, ally_sender)
 signal inflict_knockback(amount, time, sender)
 signal shake_camera(shake, strenght)
 
 signal launched_flashbang()
-
-@export var ACCELERATION : float = 10000.0
-@export var FRICTION : float = 7000.0
-
-@onready var axis = Vector2.ZERO
 
 var atk_state = Atk_States.IDLE
 
@@ -58,7 +55,6 @@ var ULTI_DURATION = 20.0
 
 var SHOTGUN_ROUNDS_COUNT = 6
 
-@onready var sprite = $Sprite2D
 @onready var camera
 
 @onready var bullets_spawnpoint = $Bullets_spawnpoint
@@ -117,13 +113,7 @@ func _physics_process(delta):
 	if stun_timer.is_stopped() and not can_interact_with_something:
 		atk_handler()
 
-'METODO CHE GESTISCE IL MOVIMENTO DEL PLAYER
-	pulisce il vettore della velocità
-	# Last Win #
-	quando si gira il player a destra o sinistra si deve girare anche le aree, 
-	altrimenti ci sarebbe il personaggio flippato ma l\'area rimane dall\'altra
-	parte'
-
+# OVERRIDE
 func move(delta):
 	axis = get_input_axis()
 	if axis == Vector2.ZERO:
@@ -142,11 +132,7 @@ func move(delta):
 		
 	move_and_slide()
 
-func get_input_axis():
-	axis.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
-	axis.y = Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
-	return axis
-
+# OVERRIDE
 func apply_friction(amount):
 	if velocity.length() > amount:
 		velocity -= velocity.normalized() * amount
@@ -156,14 +142,6 @@ func apply_friction(amount):
 			sprite.play(gun_prefix+"idle")
 		else:
 			switch_between_reload_animation(false)
-
-func apply_movement(accel):
-	velocity += accel
-	velocity = velocity.limit_length(current_des * 2.5)
-
-func reset_axis():
-	velocity = Vector2.ZERO
-	axis = Vector2.ZERO
 
 func switch_between_reload_animation(running):
 	var frame = sprite.get_frame()
@@ -175,14 +153,8 @@ func switch_between_reload_animation(running):
 		sprite.play("p_reload")
 		sprite.set_frame_and_progress(frame, frame_progress)
 
-'METODO CHE GESTISCE TUTTE LE ABILITA\' DEL PLAYER
-	ad ogni if si controlla l\'azione possibile, per l\'attacco di base si trovano
-	dei controlli aggiuntivi in base alla combo:
-	si controlla come prima cosa se l\'input è stato premuto, se l\'animazione è diversa da idle o running (ovvero o è fermo
-	o si sta spostando) oppure il numero di combo che sta facendo ed infine se non è in cooldown'
-
+# OVERRIDE
 func atk_handler():
-	#TODO CHE CAZZO????
 	if Input.is_action_pressed("base_atk") and not Input.is_action_just_pressed("base_atk") and (sprite.animation == gun_prefix+"idle" or sprite.animation == gun_prefix+"running") and gun_bullet_count <= 0:
 		if gun_prefix == "p_":
 			animation_player.play("shake_ammo")
@@ -278,6 +250,7 @@ func _on_flashbang_area_body_exited(body: Node2D) -> void:
 
 
 
+@warning_ignore("shadowed_variable_base_class")
 func flip_sprite(flip):
 	if flip:
 		sprite.flip_h = true
@@ -482,9 +455,7 @@ func _on_enemy_grab(is_been_grabbed, grab_position_marker, sender):
 		grabbed = true
 		
 		self.set_collision_layer_value(1, false)
-		self.set_collision_layer_value(2, true)
-		self.set_collision_mask_value(1, false)
-		self.set_collision_mask_value(2, true)
+		self.set_collision_mask_value(2, false)
 		
 		grab_marker = grab_position_marker
 		grab_sender = sender

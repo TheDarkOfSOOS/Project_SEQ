@@ -138,7 +138,7 @@ func _on_player_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, s
 		var dmg_info = scene_manager.calculate_dmg(atk_str, skill_str, self.current_tem, atk_pbc, atk_efc, type, self)
 		var dmg = dmg_info[0]
 		if dmg <= 0 and soul_out:
-			current_vit = 0.0001
+			current_vit = 1
 		else:
 			current_vit -= dmg
 		if dmg > 0 and not dying:

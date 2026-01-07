@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://cyro2m5dfxi3r"]
+
+[ext_resource type="Script" uid="uid://dr3m0ijcw7vqe" path="res://components/scripts/sprite_references.gd" id="1_rdo6x"]
+
+[node name="Sprite_references" type="Node2D"]
+script = ExtResource("1_rdo6x")
+
+[node name="Up" type="Marker2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Right" type="Marker2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Down" type="Marker2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Left" type="Marker2D" parent="."]
+unique_name_in_owner = true

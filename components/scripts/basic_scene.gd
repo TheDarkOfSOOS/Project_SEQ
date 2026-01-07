@@ -1,6 +1,6 @@
-extends Node2D
+class_name SceneManager extends Node2D
 
-var player : CharacterBody2D
+var player : Player
 # variabile di controllo per tenere il personaggio selezionato tra le scene
 var selected_character 
 var connected : bool = false
@@ -32,11 +32,11 @@ var player_gui
 var camera_follower : String = "res://scenes/miscellaneous/camera_follower.tscn"
 
 # array che contiene i tileset
-var tilesets : Array = [
+var tilesets : Array[String] = [
 						"res://scenes/tilemaps/gray_tile_map.tscn",
 						"res://scenes/tilemaps/deep_forest_2_tilemap.tscn",
-						"res://scenes/tilemaps/forest_2_tilemap.tscn",
 						"res://scenes/tilemaps/deep_forest_tile_map.tscn",
+						"res://scenes/tilemaps/forest_2_tilemap.tscn",
 						"res://scenes/tilemaps/forest_tile_map.tscn",
 						]
 
@@ -55,24 +55,31 @@ func _ready():
 	
 	#temp.shuffle()
 	
-	var new_tileset_order : Array
+	var new_tileset_order : Array[String]
 	
 	for i in temp:
 		new_tileset_order.append(tilesets[i])
 	
 	tilesets = new_tileset_order
 	
+	# Rendo il menu non apribile
 	Menu.game_status = Menu.GAME_STATUSES.unopenable
+	# istanzio il tileset e lo salvo
 	active_tileset = load(tilesets[boss_defeted_count]).instantiate()
+	# salvo il riferimento al container dei nemici attivo
 	active_enemy_container = active_tileset.find_child("Enemy_container")
+	# salvo il riferimento allo scene manager al container
 	active_enemy_container.scene_manager = self
+	# collego i veri segnali
 	active_enemy_container.round_changed.connect(round_gui._on_round_changed)
 	active_enemy_container.boss_defeted.connect(self._on_boss_defeted)
 	active_enemy_container.connect_boss_with_GUI.connect(round_gui._on_boss_spawned)
+	# collego i segnali dei power-ups
 	round_gui.powerup_spawnable.connect(active_enemy_container._on_powerup_spawnable)
 	active_enemy_container.instantiate_pickup.connect(powerup_handler._on_instantiate_pickable)
 	powerup_handler.spawn_pickable.connect(active_enemy_container._on_powerup_handler_spawn_pickable)
-	self.add_child(active_tileset,true)
+	# aggiungo il tileset alla scena
+	self.call_deferred("add_child", active_tileset, true)
 	
 func _process(_delta):
 	## stampa dei possibili output di danni per la formula, utile per testarla
@@ -91,14 +98,10 @@ func _process(_delta):
 			connected = true
 
 #ISTANZIA IL PLAYER IN BASE ALLA SELEZIONE DEL NODO GUI
-	#in base al pulsante selezionato carica la sua scena e la istanzia
-	#setta il parametro player della root con il nodo appena creato e gli setta la scala
-	#crea il nodo Camera2D e la istanzia come figlio del player
-	#se il player ha segnali con la camera aggiunge il suo script, altrimenti va avanti
-	#rinomina il nodo camera in Camera2D
-	#fa partire il metodo "connect_enemys_with_player"
-	#toglie l'istanzia della GUI
-
+	# params(
+	# character: il personaggio scelto passato dal GM
+	# )
+	
 func _on_gui_select_character(character):
 	var player_scene
 	selected_character = character
@@ -106,48 +109,44 @@ func _on_gui_select_character(character):
 		player_scene = load("res://scenes/characters/jack.tscn")
 	elif selected_character == "tyrone":
 		player_scene = load("res://scenes/characters/tyrone.tscn")
-	elif selected_character == "nathan":
-		player_scene = load("res://scenes/characters/nathan.tscn")
+	
+	# istanzio e salvo la scena con il personaggio scelto
 	player = player_scene.instantiate()
+	# metto il nome "Player" al personaggio
 	player.name = "Player"
+	# mi assicuro che la scale sia corretta
 	player.scale = Vector2(1.0, 1.0)
+	# salvo il riferimento allo scene manager al player
 	player.scene_manager = self
 	
-	var new_camera = load(camera_follower).instantiate()
-	add_child(new_camera, true)
+	# carico ed istanzio la telecamera
+	var new_camera : CameraFollower = load(camera_follower).instantiate()
+	# e gli passo il riferimento al player
 	new_camera.player = player
-	player.camera = new_camera.camera
-	# impostazioni per la telecamera
-	player.shake_camera.connect(player.camera._on_player_shake_camera)
-	
-	# debug: zoom diminuito
-	#camera.zoom = Vector2(0.5,0.5)
-	
-	# condizione per collegare lo script della telecamera
-	if selected_character == "nathan":
-		player.scale = Vector2(1.4, 1.4)
+
 	activate_player_GUI() # funzione per attivare le GUI
 	connect_enemies_with_player() # connetto i nemici e il player
+	# passo i riferimenti del player e del powerup handler a vicenda
 	powerup_handler.player = player
 	player.powerup_handler = powerup_handler
+	
 	gui.visible = false
 	canvas_layer.get_child(0).visible = true
+	# setto il menu del dungeon
 	Menu.game_status = Menu.GAME_STATUSES.dungeon
 	
-	add_child(player)
+	# aggiungo la camera e il player alla scena
+	self.call_deferred("add_child", new_camera, true)
+	self.call_deferred("add_child", player)
 
 # METODO CHE CONNETTE I SEGNALI AL PLAYER
-#	cicla ogni nodo figlio della root nella scena,
-#		se il figlio è diverso dal player e il nome di quel nodo contiene "Enemy" setta il pamaretro "player" del nemico con il player effettivo
-#		successivamente connette i segnali di base,
-#		se il player ha dei segnali particolari (tipo Nathan con "grab")
+#	cicla ogni nodo figlio del container
+#		se il nodo è di tipo "Enemy", allora collega i vari segnali
 
 func connect_enemies_with_player(): #connette i segnali tra il player e i nemici
-	for i in active_enemy_container.get_child_count(): #cicla per ogni figlio della scena
-		var current_node = active_enemy_container.get_child(i)
-		
+	for current_node in active_enemy_container.get_children(true): #cicla per ogni figlio della scena
 		#se il nome del nemico contiene "Enemy"
-		if "Enemy" in current_node.name: 
+		if current_node is Enemy: 
 			current_node.scene_manager = self
 			# assegno il parametro player del nemico con il player attivo
 			current_node.player = player
@@ -161,49 +160,48 @@ func connect_enemies_with_player(): #connette i segnali tra il player e i nemici
 				current_node.take_dmg.connect(player._on_enemy_take_dmg)
 			current_node.shake_camera.connect(player.camera._on_player_shake_camera)
 			
-			# se il player ha scelto nathan
-			if player.char_name == "Nathan": # connetto il segnale della grab
-				player.grab.connect(current_node._on_player_grab)
-				current_node.got_grabbed.connect(player_gui._on_nathan_grab)
-			elif player.char_name == "Tyrone": # connetto il segnale del knockback e del cambio statistiche
+			# se il player ha scelto Tyrone
+			if player is Tyrone: # connetto il segnale del knockback e del cambio statistiche
 				player.change_stats.connect(current_node._on_change_stats)
 				player.inflict_knockback.connect(current_node.init_knockback)
-			elif player.char_name == "Jack": # connetto il segnale del knockback
+			elif player is Jack: # connetto il segnale del knockback
 				player.inflict_knockback.connect(current_node.init_knockback)
 			
-			if "Lich" in current_node.name:
+			if current_node is Lich:
 				for j in active_enemy_container.get_children():
 					if "Spawnpoint" in j.name: 
 						current_node.evocation_locations.append(j)
 			
 			# se il nodo è un mezzo-umano
-			if "Werewolf" in current_node.name:
+			if current_node is Werewolf:
 				for j in active_enemy_container.get_child_count(): # cicla per ogni figlio della scena
 					var node = active_enemy_container.get_child(j) # prendo il singolo nodo
 					if "Enemy" in node.name: # se il nome del nemico contiene "Enemy"
 						current_node.change_stats.connect(node._on_change_stats) # connetto il segnale ad ogni nemico
 			
-			if "Fae" in current_node.name:
+			if current_node is Fae:
 				current_node.flee_locations = active_enemy_container.markers
 			
-			if "Centaur" in current_node.name:
+			if current_node is Centaur:
 				current_node.grab_player.connect(player._on_enemy_grab)
 				current_node.inflict_knockback.connect(player.init_knockback)
 			
 			# se il nodo è un boss
-			if "Boss" in current_node.name:
+			if current_node is Boss:
 				# allora connetto il segnale della barra della vita alla gui
 				current_node.set_health_bar_to_gui.connect(round_gui._on_boss_set_healthbar)
 
+# METODO CHIAMATO OGNI VOLTA CHE VIENE SPARATO UN PROIETTILE DAL PLAYER
 func connect_player_projectile(projectile):
-	for i in active_enemy_container.get_child_count(): #cicla per ogni figlio della scena
-		var current_node = active_enemy_container.get_child(i)
-		#se il nome del nemico contiene "Enemy"
-		if "Enemy" in current_node.name: 
+	for current_node in active_enemy_container.get_children(true): #cicla per ogni figlio del container
+		#se il nodo è un "Enemy"
+		if current_node is Enemy: 
+			# connetto il segnale del danno
 			projectile.take_dmg.connect(current_node._on_player_take_dmg)
+			# connetto il segnale del knockback
 			projectile.inflict_knockback.connect(current_node.init_knockback)
 
-func calculate_dmg(strenght, atk_str, tem, pbc, efc, type, caller):
+func calculate_dmg(strenght, atk_str, tem, pbc, efc, type, _caller):
 	var crit = false
 	var shake_amount = 0
 	var dmg : int
@@ -224,7 +222,7 @@ func calculate_dmg(strenght, atk_str, tem, pbc, efc, type, caller):
 			shake_amount = 5
 	return [dmg, crit, shake_amount]
 
-# DIGEST DEL SEGNALE DELLA PLAYER_GUI CHE NOTIFICA QUANDO GLI HP SCENDONO A 0
+# DIGEST DEL SEGNALE DELLA PLAYER_GUI CHE NOTIFICA QUANDO GLI HP DEL PLAYER SCENDONO A 0
 func _on_player_death():
 	ost_player.get_stream_playback().switch_to_clip_by_name(&"game_over")
 	gui.visible = true # la GUI diventa visibile
@@ -235,20 +233,16 @@ func _on_player_death():
 	game_over_retry.grab_focus()
 
 func activate_player_GUI():
-	var player_gui
-	# il pg scelto è Rufus allora insanzia la sua GUI
+	# istanzio la gui in base al player scelto
 	if player is Tyrone:
 		player_gui = load("res://scenes/GUI/tyrone_gui.tscn").instantiate()
-	# il pg scelto è Nathan allora insanzia la sua GUI
-	elif player.char_name == "Nathan": 
-		player_gui = load("res://scenes/GUI/nathan_gui.tscn").instantiate()
 	elif player is Jack:
 		player_gui = load("res://scenes/GUI/jack_gui.tscn").instantiate()
+		player.launched_flashbang.connect(player_gui._on_jack_flashbang)
+		
 	# connetto il segnale dell'enemy_container attivo con il digest _on_get_healed del player
 	active_enemy_container.heal_between_rounds.connect(player._on_get_healed)
 	
-	if player.char_name == "Jack":
-		player.launched_flashbang.connect(player_gui._on_jack_flashbang)
 	player_gui.player = player
 	player_gui.player_death.connect(self._on_player_death)
 	player_gui.max_health = player.default_vit
@@ -256,6 +250,7 @@ func activate_player_GUI():
 	# in modo da poter aggiornare la GUI al variare della vita
 	player.set_health_bar.connect(player_gui._on_player_set_health_bar)
 	
+	# aggiungo la gui alla scena
 	canvas_layer.add_child(player_gui,true)
 
 func _on_boss_defeted():
@@ -270,21 +265,16 @@ func _on_boss_defeted():
 	add_child(portal,true)
 
 func _on_change_stage():
+	# aggiorno il numero di boss sconfitti
 	boss_defeted_count += 1
-	
-	if boss_defeted_count == tilesets.size():
-		boss_defeted_count = 0
 	
 	# libero le variabili attive per riassegnarle
 	active_tileset.queue_free()
-	active_enemy_container.queue_free()
+	active_enemy_container.free()
 	
-	active_tileset = load(tilesets[boss_defeted_count]).instantiate()
+	active_tileset = load(tilesets[boss_defeted_count % tilesets.size()]).instantiate()
 	# istanzio un nuovo nodo tileset e assegno quest'ultimo alla variabile del tileset attivo
 	active_enemy_container = active_tileset.find_child("Enemy_container")
-	
-	player.global_position = active_enemy_container.boss_spawner.global_position
-	portal.global_position = active_enemy_container.boss_spawner.global_position
 	
 	# collego tutti i segnali del container ai rispettivi digest
 	active_enemy_container.round_changed.connect(round_gui._on_round_changed)
@@ -296,7 +286,11 @@ func _on_change_stage():
 	round_gui.powerup_spawnable.connect(active_enemy_container._on_powerup_spawnable)
 	active_enemy_container.instantiate_pickup.connect(powerup_handler._on_instantiate_pickable)
 	powerup_handler.spawn_pickable.connect(active_enemy_container._on_powerup_handler_spawn_pickable)
+
 	add_child(active_tileset, true)
+
+	player.global_position = active_enemy_container.boss_spawner.global_position
+	portal.global_position = active_enemy_container.boss_spawner.global_position
 
 func _on_canvas_layer_child_entered_tree(_node: Node) -> void:
 	if canvas_layer:

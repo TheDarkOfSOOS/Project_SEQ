@@ -1,4 +1,4 @@
-extends CharacterBody2D
+class_name KnockbackController extends CharacterBody2D
 
 @onready var target_point
 var vel_multiplyer

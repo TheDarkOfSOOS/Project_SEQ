@@ -83,6 +83,7 @@ source = 5
 texture_type = 1
 
 [resource]
+resource_local_to_scene = true
 code = "shader_type canvas_item;
 render_mode blend_mix;
 

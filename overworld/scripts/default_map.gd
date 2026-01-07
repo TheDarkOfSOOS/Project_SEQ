@@ -32,16 +32,16 @@ func _process(_delta):
 			player.sprite.play("idle") # se il player si sta spostando mi pare giusto fermarlo
 			change_player_menu()
 
-func _on_gui_select_character(char: String) -> void:
-	if selected_character == char: # se il player ha cliccato sullo stesso personaggio istanziato
+func _on_gui_select_character(character: String) -> void:
+	if selected_character == character: # se il player ha cliccato sullo stesso personaggio istanziato
 		player.moving = true
 		player.collider.set_deferred("disabled", false)
 	else: # se il player ha selezionato un personaggio
-		selected_character = char
+		selected_character = character
 		var player_scene
-		if char == "jack":
+		if character == "jack":
 			player_scene = load("res://overworld/scenes/players/jack_wander.tscn")
-		elif char == "tyrone":
+		elif character == "tyrone":
 			player_scene = load("res://overworld/scenes/players/tyrone_wander.tscn")
 		
 		add_child(player_scene.instantiate(),true)

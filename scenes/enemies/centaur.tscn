@@ -633,27 +633,12 @@ height = 158.0
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2lhk1"]
 size = Vector2(121, 85)
 
-[sub_resource type="Animation" id="Animation_sa0yw"]
-resource_name = "hit_flash"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("CentaurEnemy/Sprite2D:instance_shader_parameters/flash_value")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.06, 0.21),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [1.0, 0.0, 1.0]
-}
-
 [sub_resource type="Animation" id="Animation_sfo5h"]
 length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("CentaurEnemy/Sprite2D:instance_shader_parameters/flash_value")
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -661,6 +646,21 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [1.0]
+}
+
+[sub_resource type="Animation" id="Animation_sa0yw"]
+resource_name = "hit_flash"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:instance_shader_parameters/flash_value")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.06, 0.21),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [1.0, 0.0, 1.0]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_lo858"]
@@ -831,6 +831,7 @@ collision_layer = 2
 collision_mask = 5
 
 [node name="Collider" type="CollisionShape2D" parent="Halberd_area"]
+visible = false
 position = Vector2(83, 24)
 shape = SubResource("RectangleShape2D_b6lvu")
 disabled = true
@@ -892,7 +893,6 @@ max_neighbors = 20
 max_speed = 1703.04
 
 [node name="Hit_flash_player" type="AnimationPlayer" parent="."]
-root_node = NodePath("../..")
 libraries = {
 &"": SubResource("AnimationLibrary_lo858")
 }

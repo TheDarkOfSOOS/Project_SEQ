@@ -1,4 +1,4 @@
-[gd_scene load_steps=159 format=3 uid="uid://cdj6vi8f58cl0"]
+[gd_scene load_steps=160 format=3 uid="uid://cdj6vi8f58cl0"]
 
 [ext_resource type="Script" uid="uid://cqmhu2e8k4wws" path="res://components/scripts/tyrone.gd" id="1_kqagk"]
 [ext_resource type="Texture2D" uid="uid://b2uag3j6vt8fm" path="res://components/sprites/rufus/Rufus_base_atk1.png" id="2_qcuyf"]
@@ -830,6 +830,9 @@ height = 84.4445
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lu0mv"]
 size = Vector2(39.5, 94)
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_8y0m8"]
+radius = 190.01053
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_fpam1"]
 atlas = ExtResource("14_5masp")
 region = Rect2(0, 0, 800, 800)
@@ -1090,14 +1093,16 @@ _data = {
 }
 
 [sub_resource type="Gradient" id="Gradient_8y0m8"]
-offsets = PackedFloat32Array(0, 0.638806)
-colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+offsets = PackedFloat32Array(0, 0.7)
+colors = PackedColorArray(0.6797701, 0.6797701, 0.67977005, 1, 0, 0, 0, 1)
+metadata/_snap_enabled = true
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_odml0"]
 gradient = SubResource("Gradient_8y0m8")
 use_hdr = true
 fill = 1
-fill_from = Vector2(0.52649575, 0.4940171)
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.1)
 
 [node name="CharacterBody2D" type="CharacterBody2D"]
 process_mode = 1
@@ -1147,12 +1152,18 @@ shape = SubResource("RectangleShape2D_lu0mv")
 disabled = true
 debug_color = Color(0.666667, 0.458824, 0.611765, 0.419608)
 
+[node name="Sliding_area" type="Area2D" parent="."]
+collision_mask = 2
+
+[node name="Collider" type="CollisionShape2D" parent="Sliding_area"]
+visible = false
+shape = SubResource("CircleShape2D_8y0m8")
+
 [node name="Skill_1_area" type="Area2D" parent="."]
 position = Vector2(0, 2)
 collision_mask = 6
 
 [node name="Effect" type="AnimatedSprite2D" parent="Skill_1_area"]
-self_modulate = Color(1.4807141, 1.4807141, 1.4807141, 1)
 z_index = 1
 position = Vector2(0, 6.10352e-05)
 scale = Vector2(0.285, 0.198826)
@@ -1271,6 +1282,8 @@ texture = SubResource("GradientTexture2D_odml0")
 [connection signal="animation_finished" from="Status_alert_sprite" to="." method="_on_status_alert_sprite_animation_finished"]
 [connection signal="body_entered" from="Basic_atk_Area" to="." method="_on_basic_atk_area_body_entered"]
 [connection signal="body_exited" from="Basic_atk_Area" to="." method="_on_basic_atk_area_body_exited"]
+[connection signal="body_entered" from="Sliding_area" to="." method="_on_sliding_area_body_entered"]
+[connection signal="body_exited" from="Sliding_area" to="." method="_on_sliding_area_body_exited"]
 [connection signal="body_entered" from="Skill_1_area" to="." method="_on_skill_1_area_body_entered"]
 [connection signal="body_exited" from="Skill_1_area" to="." method="_on_skill_1_area_body_exited"]
 [connection signal="animation_finished" from="Skill_1_area/Effect" to="." method="_on_effect_animation_finished"]
