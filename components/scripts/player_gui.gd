@@ -2,13 +2,13 @@ class_name Player_GUI extends Control
 
 var player : Player
 
-@onready var skill1_cooldown_time = $GridContainer/Control/Skill1_cooldown
-@onready var skill2_cooldown_time = $GridContainer/Control/Skill2_cooldown
-@onready var eva_cooldown_time = $GridContainer/Control/Eva_cooldown
-@onready var ulti_cooldown_time = $GridContainer/Control/Ulti_cooldown
+@onready var skill1_progress_bar : TextureProgressBar = %Skill1_cooldown
+@onready var skill2_progress_bar : TextureProgressBar = $%Skill2_cooldown
+@onready var eva_progress_bar : TextureProgressBar = %Eva_cooldown
+@onready var ulti_progress_bar : TextureProgressBar = %Ulti_cooldown
 
-@onready var healthbar : ProgressBar = $MarginContainer/PanelContainer/Control/Health_bar
-@onready var healthbar_label = $MarginContainer/PanelContainer/Control/Health_bar/Health_label
+@onready var healthbar : TextureProgressBar = %Health_bar
+@onready var healthbar_label = %Health_label
 
 var animation_player : AnimationPlayer
 var max_health : int
@@ -28,17 +28,17 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
 	if player != null and not alive:
-		skill1_cooldown_time.max_value = player.skill1_cooldown.wait_time
-		skill2_cooldown_time.max_value = player.skill2_cooldown.wait_time
-		eva_cooldown_time.max_value = player.eva_cooldown.wait_time
-		ulti_cooldown_time.max_value = player.ulti_cooldown.wait_time
+		skill1_progress_bar.max_value = player.SKILL1_WAIT_TIME
+		skill2_progress_bar.max_value = player.SKILL2_WAIT_TIME
+		eva_progress_bar.max_value = player.EVADE_WAIT_TIME
+		ulti_progress_bar.max_value = player.ULTI_WAIT_TIME
 		alive = true
 	
 	if player != null:
-		skill1_cooldown_time.value = player.skill1_cooldown.time_left
-		skill2_cooldown_time.value = player.skill2_cooldown.time_left
-		eva_cooldown_time.value = player.eva_cooldown.time_left
-		ulti_cooldown_time.value = player.ulti_cooldown.time_left
+		skill1_progress_bar.value = player.skill1_cooldown.time_left
+		skill2_progress_bar.value = player.skill2_cooldown.time_left
+		eva_progress_bar.value = player.eva_cooldown.time_left
+		ulti_progress_bar.value = player.ulti_cooldown.time_left
 		
 	if not is_instance_valid(player) and alive:
 		alive = false
@@ -54,14 +54,23 @@ func _on_player_set_health_bar(vit : int):
 	healthbar.value = vit
 	healthbar_label.text = str(vit) + "/" + str(player.default_vit)
 
+# METODO PER AGGIORNARE I COOLDOWNS NEL CASO DI POWERUPS CHE LO FANNO
+func _on_update_cooldowns() -> void:
+	skill1_progress_bar.max_value = player.SKILL1_WAIT_TIME
+	skill2_progress_bar.max_value = player.SKILL2_WAIT_TIME
+	eva_progress_bar.max_value = player.EVADE_WAIT_TIME
+	ulti_progress_bar.max_value = player.ULTI_WAIT_TIME
+
+# DEPRECATED
 func _on_nathan_grab(is_grabbed):
 	if is_grabbed:
 		player.skill2_cooldown.stop()
-		skill2_cooldown_time.tint_under = Color(Color.RED,1)
+		skill2_progress_bar.tint_under = Color(Color.RED,1)
 		player._on_get_healed(player.bite_heal_force)
 	else:
 		player.skill2_cooldown.start()
-		skill2_cooldown_time.tint_under = Color(Color.WHITE,1)
+		skill2_progress_bar.tint_under = Color(Color.WHITE,1)
 
+# METODO DI JACK PER FAR PARTIRE L'EFFETTO DELLA FLASHBANG
 func _on_jack_flashbang():
 	animation_player.play("flashbang")

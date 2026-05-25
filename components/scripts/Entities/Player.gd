@@ -8,6 +8,16 @@ var ACCELERATION : float = 10000.0
 var FRICTION : float = 6500.0
 
 @onready var sprite : AnimatedSprite2D = $Sprite2D
+var sprite_animation_speed : float = 1.0
+
+var EVADE_WAIT_TIME
+var SKILL2_WAIT_TIME
+var SKILL1_WAIT_TIME
+#var ULTI_WAIT_TIME
+var ULTI_WAIT_TIME
+var ULTI_DURATION
+
+signal update_gui_cooldowns()
 
 #METODO CHE GESTISCE IL MOVIMENTO DEL PLAYER
 	#pulisce il vettore della velocità

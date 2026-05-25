@@ -37,16 +37,16 @@ var ult_moving_mod
 
 @export var basic_atk_force = 10
 @export var basic_stun_time = 0.4
-@onready var basic_atk_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
+@onready var basic_atk_type = game_manager.Attack_Types.PHYSICAL
 
 @export var evade_amount = 1000
 @export var evade_force = 10
 @export var evade_stun_time = 2.1
-@onready var evade_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
+@onready var evade_type = game_manager.Attack_Types.PHYSICAL
 
 @export var skill1_force = 12
 @export var skill1_stun_time = 0.6
-@onready var skill1_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
+@onready var skill1_type = game_manager.Attack_Types.PHYSICAL
 
 @export var skill2_force = 23
 @export var skill2_stun_time = 1.4
@@ -55,13 +55,13 @@ var ult_moving_mod
 @export var skill2_duration = 15
 @export var skill2_knockback_amount = 300
 @export var skill2_knockback_force = 7.2
-@onready var skill2_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
+@onready var skill2_type = game_manager.Attack_Types.PHYSICAL
 
 @export var ult_force = 80
 @export var ult_stun_time = 6
 @export var ult_knockback_amount = 450
 @export var ult_knockback_force = 8
-@onready var ult_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
+@onready var ult_type = game_manager.Attack_Types.PHYSICAL
 
 @onready var camera
 
@@ -90,11 +90,6 @@ var ult_moving_mod
 
 @onready var combo_time : Timer = $Combo_time
 
-var eva_cooldown_duration : float = 5.0
-var skill1_cooldown_duration : float = 8.0
-var skill2_cooldown_duration : float = 9.0
-var ulti_cooldown_duration : float = 60.0
-
 #METODO CHE VIENE CHIAMATO AD OGNI FRAME
 	#se il player si può muovere
 		#esegue il metodo per muoversi
@@ -114,12 +109,15 @@ func _ready():
 	BASIC_ATK_COLLIDER_POSITION_X = bs_atk_collider.position.x
 	SKILL1_COLLIDER_POSITION_X = skill1_collider.position.x
 	
+	EVADE_WAIT_TIME = 5.0
+	SKILL1_WAIT_TIME = 8.0
+	SKILL2_WAIT_TIME = 9.0
+	ULTI_WAIT_TIME = 60.0
 	
-	
-	eva_cooldown.wait_time = eva_cooldown_duration
-	skill1_cooldown.wait_time = skill1_cooldown_duration
-	skill2_cooldown.wait_time = skill2_cooldown_duration
-	ulti_cooldown.wait_time = ulti_cooldown_duration
+	eva_cooldown.wait_time = EVADE_WAIT_TIME
+	skill1_cooldown.wait_time = SKILL1_WAIT_TIME
+	skill2_cooldown.wait_time = SKILL2_WAIT_TIME
+	ulti_cooldown.wait_time = ULTI_WAIT_TIME
 	
 	emit_signal("set_health_bar", default_vit)
 
@@ -185,7 +183,7 @@ func atk_handler():
 		sprite.play("base atk5")
 	
 	elif Input.is_action_just_pressed("skill1") and (sprite.animation == "idle" or sprite.animation == "running") and skill1_cooldown.is_stopped() and not can_interact_with_something:
-		skill1_cooldown.start()
+		skill1_cooldown.start(SKILL1_WAIT_TIME)
 		moving = false
 		atk_state = Atk_States.SK1
 		skill1_collider.disabled = false
@@ -195,7 +193,17 @@ func atk_handler():
 	
 	elif Input.is_action_just_pressed("evade") and (sprite.animation == "idle" or sprite.animation == "running") and eva_cooldown.is_stopped() and not can_interact_with_something:
 		#if not knockbacked and stun_timer.is_stopped() and ult_stop_timer.is_stopped():
-		eva_cooldown.start()
+		# Controllo per la presenza del powerup "john"
+		var temp = [EVADE_WAIT_TIME]
+		temp = powerup_handler.apply_powerup_boost("John", temp)
+		#print(temp)
+		if temp == null:
+			temp = 0
+		
+		eva_cooldown.start(EVADE_WAIT_TIME+temp)
+		if temp != null:
+			self.emit_signal("update_gui_cooldowns")
+		eva_cooldown.start(EVADE_WAIT_TIME+temp)
 		moving = false
 		atk_state = Atk_States.EVA
 		eva_duration_timer.start()
@@ -204,7 +212,7 @@ func atk_handler():
 		is_evading = true
 	
 	elif Input.is_action_just_pressed("skill2") and (sprite.animation == "idle" or sprite.animation == "running") and skill2_cooldown.is_stopped() and not can_interact_with_something:
-		skill2_cooldown.start(skill2_cooldown_duration)
+		skill2_cooldown.start(SKILL2_WAIT_TIME)
 		moving = false
 		atk_state = Atk_States.SK2
 		sprite.play("skill2")
@@ -212,7 +220,7 @@ func atk_handler():
 		reset_axis()
 
 	elif Input.is_action_just_pressed("ult") and (sprite.animation == "idle" or sprite.animation == "running") and ulti_cooldown.is_stopped() and not can_interact_with_something:
-		ulti_cooldown.start()
+		ulti_cooldown.start(ULTI_WAIT_TIME)
 		moving = false
 		atk_state = Atk_States.ULT
 		sprite.play("charging_ult")
@@ -380,7 +388,7 @@ func _on_sprite_2d_frame_changed():
 func _on_effect_frame_changed():
 	if skill1_effect.frame % 2 == 0 and atk_state == Atk_States.SK1:
 		skill1_collider.disabled = false
-		await get_tree().create_timer(0.1).timeout
+		await game_manager.force_delay(0.1)
 		emit_signal("take_dmg", current_str, skill1_force, skill1_stun_time, current_pbc, current_efc, skill1_type, self)
 		skill1_collider.disabled = true
 	

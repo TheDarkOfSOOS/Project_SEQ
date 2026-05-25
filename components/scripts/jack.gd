@@ -42,16 +42,9 @@ var gun_stun_time
 var max_bullet_count
 var gun_bullet_count
 var gun_shake_strenght
-@onready var flashbang_type = get_tree().get_first_node_in_group("gm").Attack_Types.PHYSICAL
+@onready var flashbang_type = game_manager.Attack_Types.PHYSICAL
 
 var changing_gun = false
-
-var EVADE_WAIT_TIME = 5.0
-var SKILL2_WAIT_TIME = 35.0
-var SKILL1_WAIT_TIME = 26.0
-#var ULTI_WAIT_TIME = 90.0
-var ULTI_WAIT_TIME = 9.0
-var ULTI_DURATION = 20.0
 
 var SHOTGUN_ROUNDS_COUNT = 6
 
@@ -96,6 +89,15 @@ func _ready():
 	char_name = "Jack"
 	
 	emit_signal("set_health_bar", default_vit)
+	
+	EVADE_WAIT_TIME = 5.0
+	SKILL2_WAIT_TIME = 35.0
+	SKILL1_WAIT_TIME = 26.0
+	ULTI_WAIT_TIME = 90.0
+	#ULTI_WAIT_TIME = 9.0
+	ULTI_DURATION = 20.0
+	
+	eva_cooldown.wait_time = EVADE_WAIT_TIME
 	skill2_cooldown.wait_time = SKILL2_WAIT_TIME
 	skill1_cooldown.wait_time = SKILL1_WAIT_TIME
 	ulti_cooldown.wait_time = ULTI_WAIT_TIME
@@ -181,7 +183,16 @@ func atk_handler():
 	
 	#elif Input.is_action_just_pressed("evade") and ("idle" in sprite.animation or "running" in sprite.animation) and eva_cooldown.is_stopped():
 	elif Input.is_action_just_pressed("evade") and not ("damaged" in sprite.animation or "flashbang" in sprite.animation) and eva_cooldown.is_stopped():
-		eva_cooldown.start()
+		var temp = [EVADE_WAIT_TIME]
+		temp = powerup_handler.apply_powerup_boost("John", temp)
+		#print(temp)
+		if temp == null:
+			temp = 0
+		
+		eva_cooldown.start(EVADE_WAIT_TIME+temp)
+		if temp != null:
+			self.emit_signal("update_gui_cooldowns")
+		eva_cooldown.start(EVADE_WAIT_TIME+temp)
 		moving = false
 		shooting_delay_timer.stop()
 		reaction_timer.stop()
@@ -217,7 +228,7 @@ func atk_handler():
 
 	#elif Input.is_action_just_pressed("ult") and (sprite.animation == gun_prefix+"idle" or sprite.animation == gun_prefix+"running") and ulti_cooldown.is_stopped():
 	elif Input.is_action_just_pressed("ult") and not ("damaged" in sprite.animation or "flashbang" in sprite.animation) and ulti_cooldown.is_stopped():
-		ulti_cooldown.start()
+		ulti_cooldown.start(ULTI_WAIT_TIME)
 		ulti_duration_timer.start(ULTI_DURATION)
 		skill1_cooldown.start(0.1)
 		skill2_cooldown.start(0.1)
@@ -443,8 +454,7 @@ func _on_enemy_take_dmg(atk_str, skill_str, stun_sec, atk_pbc, atk_efc, type, se
 		set_idle()
 		sprite.play(gun_prefix+"damaged")
 		moving = false
-		stun_timer.wait_time = stun_sec
-		stun_timer.start()
+		stun_timer.start(stun_sec)
 
 func _on_enemy_grab(is_been_grabbed, grab_position_marker, sender):
 	if is_been_grabbed and not grabbed:

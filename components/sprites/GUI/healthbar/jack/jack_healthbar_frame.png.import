@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bflcuuauxyxfi"
-path="res://.godot/imported/Eva_GUI_rufus.png-78522b9c0d8dc31cdce6f58dbd077b05.ctex"
+uid="uid://c5gghkm65em2s"
+path="res://.godot/imported/jack_healthbar_frame.png-fd0930499ab9f6c4fb07328d4b797f50.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://components/sprites/GUI/player_GUI/rufus/Eva_GUI_rufus.png"
-dest_files=["res://.godot/imported/Eva_GUI_rufus.png-78522b9c0d8dc31cdce6f58dbd077b05.ctex"]
+source_file="res://components/sprites/GUI/healthbar/jack/jack_healthbar_frame.png"
+dest_files=["res://.godot/imported/jack_healthbar_frame.png-fd0930499ab9f6c4fb07328d4b797f50.ctex"]
 
 [params]
 

@@ -246,9 +246,11 @@ func activate_player_GUI():
 	player_gui.player = player
 	player_gui.player_death.connect(self._on_player_death)
 	player_gui.max_health = player.default_vit
-	# connetto infine il segnale del player al digest della GUI 
-	# in modo da poter aggiornare la GUI al variare della vita
+	# connetto il segnale del player al digest della GUI 
+	# per aggiornare la GUI al variare della vita
 	player.set_health_bar.connect(player_gui._on_player_set_health_bar)
+	# per aggiornare la GUI in caso di cambi di cooldown
+	player.update_gui_cooldowns.connect(player_gui._on_update_cooldowns)
 	
 	# aggiungo la gui alla scena
 	canvas_layer.add_child(player_gui,true)

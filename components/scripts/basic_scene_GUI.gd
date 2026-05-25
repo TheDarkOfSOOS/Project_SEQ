@@ -14,7 +14,10 @@ var max_health
 
 var spawned_boss
 # ogni quante ondate spawna un powerup
+#var powerup_round : int = 1
 var powerup_round : int = 5
+
+@onready var game_manager : GameManager = get_tree().get_first_node_in_group("gm")
 
 func _ready():
 	round_displayer.text = "Ondata: " + str(round_count)
@@ -62,7 +65,9 @@ func _on_animation_player_animation_finished(anim_name):
 		spawned_boss = null
 		healthbar.max_value = 100
 
-func dramatic_slow_motion(time_reduction : float = 0.3, duration : float = 0.5):
+func dramatic_slow_motion(time_reduction : float = 0.3, duration : float = 0.5) -> void:
 	Engine.time_scale = time_reduction
-	await get_tree().create_timer(duration, true, false, true).timeout
+	await game_manager.force_delay(duration)
+	#await get_tree().create_timer(duration, false, false, true).timeout
 	Engine.time_scale = 1.0
+	

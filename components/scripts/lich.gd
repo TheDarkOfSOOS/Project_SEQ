@@ -70,7 +70,7 @@ func _ready():
 	var stats : Resource = load("res://components/resources/stats/lich_stats.tres")
 	load_stats(stats)
 	
-	#self.current_vit = 1
+	self.current_vit = 1
 	
 	emit_signal("set_health_bar_to_gui", default_vit)
 	sprite.play("spawn")

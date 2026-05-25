@@ -1,4 +1,4 @@
-extends Node
+class_name GameManager extends Node
 # To call game_manager, please use:
 # get_tree().get_first_node_in_group("gm")
 
@@ -71,3 +71,7 @@ func fullscreen():
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+
+func force_delay(duration : float) -> void:
+	#print("entrato, "+str(duration))
+	await get_tree().create_timer(duration, false, false, true).timeout

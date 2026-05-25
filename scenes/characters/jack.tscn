@@ -1401,6 +1401,7 @@ one_shot = true
 [node name="Ulti_cooldown" type="Timer" parent="."]
 wait_time = 90.0
 one_shot = true
+autostart = true
 
 [node name="Shooting_delay_time" type="Timer" parent="."]
 wait_time = 0.4

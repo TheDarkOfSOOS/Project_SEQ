@@ -11,5 +11,4 @@ type = 1
 max_rarity = 4
 base = 20.0
 step = 7.5
-boost = 0.0
 metadata/_custom_type_script = "uid://5w11p6jwfey5"

@@ -27,9 +27,10 @@ var instantiated_line : Line2D
 var line : Line2D
 
 var scene_manager : SceneManager
-
+@onready var game_manager : GameManager = get_tree().get_first_node_in_group("gm")
 # ogni quante ondata spawna un boss
 var boss_round : int = 10
+#var boss_round : int = 1
 
 signal round_changed() # segnale che manda alla GUI per incrementare il counter
 signal heal_between_rounds(amount) # segnale che manda al player per curarlo
@@ -115,7 +116,7 @@ func _process(_delta):
 			time_between_rounds.start()
 	else: # altrimenti
 		# se non è spawnato il portale e il powerup è stato raccolto
-		if not portal_spawned and powerup_picked:
+		if not portal_spawned and powerup_picked and not fighting:
 			# dichiaro che il boss è stato sconfitto
 			emit_signal("boss_defeted")
 			# e dico che il portale è spawnato
@@ -231,7 +232,7 @@ func _on_powerup_handler_spawn_pickable(node : Variant) -> void:
 func dramatic_slow_motion() -> void:
 	if dramatic_flag:
 		Engine.time_scale = 0.3
-		await get_tree().create_timer(0.5).timeout
+		await game_manager.force_delay(0.5)
 		Engine.time_scale = 1.0
 		dramatic_flag = false
 

@@ -44,6 +44,8 @@ const status_icon : PackedScene = preload("res://scenes/miscellaneous/status_ico
 @onready var status_sprite : AnimatedSprite2D = $Status_alert_sprite
 @onready var stun_timer : Timer = $Stun
 
+@onready var game_manager : GameManager = get_tree().get_first_node_in_group("gm")
+
 func load_stats(stats : Stats) -> void:
 	default_vit = stats.vit
 	#default_vit = 1

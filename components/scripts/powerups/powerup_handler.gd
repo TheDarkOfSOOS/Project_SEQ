@@ -1,6 +1,6 @@
 extends Node
 
-var player : Node
+var player : Player
 
 var active_powerups : Array
 var possible_powerups : Array
@@ -10,6 +10,7 @@ var pickable_scene = preload("res://scenes/powerup/powerup_pickable.tscn")
 signal spawn_pickable(node)
 
 func _ready() -> void:
+	# Funzione che legge le risorse nella cartella dei powerups
 	var path = "res://components/resources/powerups/"
 	var dir = DirAccess.open(path)
 	if dir:
@@ -20,12 +21,20 @@ func _ready() -> void:
 				possible_powerups.append(load(path + file_name))
 			file_name = dir.get_next()
 
+# Funzione per istanziare il pickable dei powerups
 func _on_instantiate_pickable():
 	add_child(pickable_scene.instantiate())
 	var pickable = get_child(-1)
 	pickable.handler = self
 	pickable.player = player
 	pickable.canvas_layer = get_parent().canvas_layer
+	##DEBUG
+	#for i in range(3):
+		#var pulled_powerup = possible_powerups[2]
+		#var pulled_rar = PowerupStats.rar.find_key(randi_range(i, pulled_powerup.max_rarity))
+		#
+		#pickable.pulled_powerups.append(pulled_powerup)
+		#pickable.pulled_rarities.append(PowerupStats.rar.get(pulled_rar))
 	for i in range(3):
 		var pulled_powerup = possible_powerups.pick_random()
 		var pulled_rar = PowerupStats.rar.find_key(randi_range(0, pulled_powerup.max_rarity))
@@ -42,39 +51,34 @@ func _on_instantiate_pickable():
 		
 		pickable.pulled_powerups.append(pulled_powerup)
 		pickable.pulled_rarities.append(PowerupStats.rar.get(pulled_rar))
-	##DEBUG
-	#for i in range(3):
-		#var pulled_powerup = possible_powerups[0]
-		#var pulled_rar = PowerupStats.rar.get("common") + i
-		#
-		#pickable.pulled_powerups.append(pulled_powerup)
-		#pickable.pulled_rarities.append(PowerupStats.rar.get(pulled_rar))
 	
 	emit_signal("spawn_pickable", pickable)
 
-func new_powerup(resource : Resource, pulled_rarity : PowerupStats.rar) -> void:
+# Funzione che viene chiamata quando viene raccolto un powerup
+func new_powerup(resource : Powerup, pulled_rarity : PowerupStats.rar) -> void:
 	if not active_powerups.has(resource):
 		resource.max_rarity = pulled_rarity
 		active_powerups.append(resource)
 		activate_powerup(resource)
 		
 		if resource.custom_handler:
-			add_child(load(resource.custom_handler).instantiate())
+			add_child(resource.custom_handler.instantiate())
 	else:
 		activate_powerup(resource, true)
 		resource.max_rarity = pulled_rarity
 		activate_powerup(resource)
 
-func activate_powerup(powerup : Resource, delete : bool = false) -> void:
+# Funzione per attivare per la prima volta un powerup
+func activate_powerup(powerup : Powerup, delete : bool = false) -> void:
 	if powerup.p_name == "Robert":
 		if not delete:
 			powerup.boost = increase_stat_by_percentage(player.default_vit, rarity_power(powerup))
 		else:
 			powerup.boost *= -1
-		player.default_vit += powerup.boost
+		player.default_vit += round(powerup.boost)
 		if not player.current_vit + powerup.boost <= 0:
 			player.emit_signal("set_health_bar", player.current_vit)
-		player.current_vit += powerup.boost
+		player.current_vit += round(powerup.boost)
 		player.emit_signal("set_health_bar", player.current_vit)
 		
 		powerup.boost = abs(powerup.boost)
@@ -84,15 +88,28 @@ func activate_powerup(powerup : Resource, delete : bool = false) -> void:
 	
 	elif powerup.p_name == "Abigail":
 		powerup.boost = rarity_power(powerup)
+	
+	elif powerup.p_name == "John":
+		if not delete:
+			powerup.boost = increase_stat_by_percentage(player.sprite_animation_speed, rarity_power(powerup))
+		else:
+			powerup.boost *= -1
+		player.sprite_animation_speed += powerup.boost
+		player.sprite.speed_scale = player.sprite_animation_speed
+		
+		powerup.boost = abs(powerup.boost)
 
-func increase_stat_by_percentage(base : int, perc : int) -> int:
-	var a : int = perc * base / 100
+# Funzione d'appoggio che dati una base e una percentuale, essa viene incrementata
+func increase_stat_by_percentage(base : float, perc : float) -> float:
+	var a : float = perc * base / 100
 	return a
 
-func rarity_power(resource : Resource) -> float:
+# Funzione d'appoggio che data una risorsa calcola il boost della rarità pullata
+func rarity_power(resource : Powerup) -> float:
 	var a : float = resource.base + (resource.step * resource.max_rarity)
 	return a
 
+# Funzione che viene chiamata ogni volta che deve essere attivato un powerup
 func apply_powerup_boost(powerup_name : String, param : Array = [null]) -> Variant:
 	for i in active_powerups:
 		if powerup_name == i.p_name:
@@ -104,5 +121,7 @@ func apply_powerup_boost(powerup_name : String, param : Array = [null]) -> Varia
 				return param
 			elif i.p_name == "Abigail":
 				return increase_stat_by_percentage(param.pop_front(), i.boost)
+			elif i.p_name == "John":
+				return increase_stat_by_percentage(param.pop_front(), rarity_power(i))
 			
 	return null

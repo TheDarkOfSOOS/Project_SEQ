@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bflcuuauxyxfi"
-path="res://.godot/imported/Eva_GUI_rufus.png-78522b9c0d8dc31cdce6f58dbd077b05.ctex"
+uid="uid://dpru66ftd3b3e"
+path="res://.godot/imported/healthbar_progress_texture.png-892076d0025e4940aa7bb924a5b26514.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://components/sprites/GUI/player_GUI/rufus/Eva_GUI_rufus.png"
-dest_files=["res://.godot/imported/Eva_GUI_rufus.png-78522b9c0d8dc31cdce6f58dbd077b05.ctex"]
+source_file="res://components/sprites/GUI/healthbar/healthbar_progress_texture.png"
+dest_files=["res://.godot/imported/healthbar_progress_texture.png-892076d0025e4940aa7bb924a5b26514.ctex"]
 
 [params]
 

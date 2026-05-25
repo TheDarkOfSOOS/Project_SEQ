@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bflcuuauxyxfi"
-path="res://.godot/imported/Eva_GUI_rufus.png-78522b9c0d8dc31cdce6f58dbd077b05.ctex"
+uid="uid://bpjii6bx2hguc"
+path="res://.godot/imported/tyrone_skill1_icon.png-b8f8d204282c031d8fcfa2c110cbe2ca.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://components/sprites/GUI/player_GUI/rufus/Eva_GUI_rufus.png"
-dest_files=["res://.godot/imported/Eva_GUI_rufus.png-78522b9c0d8dc31cdce6f58dbd077b05.ctex"]
+source_file="res://components/sprites/GUI/player_GUI/tyrone/tyrone_skill1_icon.png"
+dest_files=["res://.godot/imported/tyrone_skill1_icon.png-b8f8d204282c031d8fcfa2c110cbe2ca.ctex"]
 
 [params]
 
